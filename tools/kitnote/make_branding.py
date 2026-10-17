@@ -141,7 +141,11 @@ def main() -> None:
     images[256].save(icons / "kitnote_AppIcon.ico", sizes=[(s, s) for s in (16, 24, 32, 48, 64, 96, 128, 256)])
     images[1024].convert("RGB").save(ROOT / "share/icons/kitnote_logo_full.png")
     images[1024].save(icons / "kitnote_AppIcon.icns")
-    (icons / "AppIcon.icon/Assets/1x1 Colour.svg").write_text(MARK_SVG, encoding="utf-8")
+    # Icon Composer lays a layer out at its own size on a 1024 x 1024 canvas, so the mark (drawn on 128 x 128) is
+    # scaled up to it, in the proportions of the tile above; at 128 x 128 it is a speck in the middle of the icon.
+    (icons / "AppIcon.icon/Assets/1x1 Colour.svg").write_text(
+        f'<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">'
+        f"\n{placed(MARK_SVG, 0, 0, 8)}\n</svg>\n", encoding="utf-8")
 
     # File-type icons (the Windows resource file references both).
     for folder, stem in (("MsczIcon", "kitnote_MsczIcon"), ("MscxIcon", "kitnote_MscxIcon")):
