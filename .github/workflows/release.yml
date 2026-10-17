@@ -56,7 +56,7 @@ jobs:
           fi
           # A tag that already exists must point at the commit this run builds. Otherwise the release
           # would carry binaries of one commit under the tag of another. Peeled (annotated) tags win.
-          REMOTE_SHA="$(git ls-remote --tags origin "refs/tags/$TAG" | awk 'index($2, "^{}") { peeled = $1; next } { direct = $1 } END { print (peeled != "" ? peeled : direct) }')"
+          REMOTE_SHA="$(git ls-remote --tags origin "refs/tags/$TAG" "refs/tags/$TAG^{}" | awk 'index($2, "^{}") { peeled = $1; next } { direct = $1 } END { print (peeled != "" ? peeled : direct) }')"
           if [ -n "$REMOTE_SHA" ] && [ "$REMOTE_SHA" != "$GITHUB_SHA" ]; then
             echo "::error::Tag $TAG already exists at $REMOTE_SHA, not at this run's commit $GITHUB_SHA. Use a new version, or run the release from that commit."
             exit 1
