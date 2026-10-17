@@ -63,7 +63,13 @@ jobs:
       - name: Put Qt and Ninja on PATH
         shell: pwsh
         run: |
-          $qt = Join-Path $env:RUNNER_TEMP 'Qt\6.10.2\msvc2022_64'
+          # install-qt-action says where it put Qt (QT_ROOT_DIR); otherwise look for it below RUNNER_TEMP
+          $qt = $env:QT_ROOT_DIR
+          if (-not $qt -or -not (Test-Path (Join-Path $qt 'bin\qmake.exe'))) {
+            $found = Get-ChildItem -Path $env:RUNNER_TEMP -Recurse -Filter qmake.exe -ErrorAction SilentlyContinue |
+              Where-Object { $_.FullName -like '*6.10.2*msvc2022_64*' } | Select-Object -First 1
+            if ($found) { $qt = Split-Path (Split-Path $found.FullName) }
+          }
           if (-not (Test-Path (Join-Path $qt 'bin\qmake.exe'))) {
             throw "Qt 6.10.2 was not found at $qt"
           }
@@ -128,7 +134,7 @@ jobs:
       - name: KitNote checks from the command line
         shell: bash
         env:
-          PYTHONUTF8: '1'
+          PYTHONUTF8: '1'
         run: |
           set -euo pipefail
           python tools/kitnote/smoke_test.py
@@ -149,7 +155,7 @@ jobs:
         if: ${{ inputs.full_tests }}
         shell: bash
         env:
-          PYTHONUTF8: '1'
+          PYTHONUTF8: '1'
         run: |
           set -euo pipefail
           python tools/kitnote/stress_test.py

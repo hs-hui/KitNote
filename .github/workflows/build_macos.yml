@@ -126,13 +126,7 @@ jobs:
         python3 --version
         lupdate -version || true
 
-    - name: Generate _en.ts files
-      env:
-        LUPDATE_ARGS: ""
-        POSTPROCESS_ARGS: "--warn-only ${{ env.DO_PLACEHOLDER_TRANSLATIONS == 'true' && '--generate-placeholder-translations' || '' }}"
-      run: |
-        bash ./tools/translations/run_lupdate.sh
-
+    # (the translation catalogues are kept in the repository, as on Windows: no lupdate run here)
     - name: Build
       run: |
         bash ./buildscripts/ci/macos/build.sh -n ${{ env.BUILD_NUMBER }}
