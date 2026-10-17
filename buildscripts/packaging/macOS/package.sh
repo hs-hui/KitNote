@@ -215,7 +215,7 @@ hdiutil create -size "${SIZE_MB}m" -fs HFS+ -volname "$VOL_NAME" -ov "$RW_DMG" >
 echo "Mount the disk image"
 read -r DEV MNT < <(hdiutil attach "$RW_DMG" -readwrite -noverify -noautoopen -nobrowse -plist | python3 -c '
 import plistlib, sys
-entities = plistlib.load(sys.stdin.buffer)["system-entities"]
+entities = plistlib.loads(sys.stdin.buffer.read())["system-entities"]
 dev = next(e["dev-entry"] for e in entities if "dev-entry" in e)
 mnt = next(e["mount-point"] for e in entities if "mount-point" in e)
 print(dev, mnt)

@@ -5,7 +5,15 @@
 # Needs a built KitNote in build.install. Nothing outside %TEMP%\kitnote-install-test and
 # HKCU:\Software\KitNoteInstallTest is touched, and both are removed at the end.
 $ErrorActionPreference = 'Stop'
-$S = Join-Path $env:TEMP 'kitnote-install-test'
+# (TEMP can be a short 8.3 path, e.g. C:\Users\RUNNER~1\... on a build server, while shortcuts and the
+# registry hold long paths: the scratch folder is named by its long path so that the comparisons hold)
+Add-Type -Namespace KitNoteTest -Name Path -MemberDefinition @'
+[DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
+public static extern uint GetLongPathName(string shortPath, System.Text.StringBuilder longPath, uint size);
+'@
+$longTemp = New-Object System.Text.StringBuilder 1024
+$tempRoot = if ([KitNoteTest.Path]::GetLongPathName($env:TEMP, $longTemp, 1024) -gt 0) { $longTemp.ToString() } else { $env:TEMP }
+$S = Join-Path $tempRoot 'kitnote-install-test'
 $repo = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 $stage = Join-Path $S 'itest\stage folder'          # a space in the path on purpose
 $target = Join-Path $S 'itest\Programs\KitNote'
