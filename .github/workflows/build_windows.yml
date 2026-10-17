@@ -160,17 +160,26 @@ jobs:
           set -euo pipefail
           python tools/kitnote/stress_test.py
 
-      - name: Package the zip
+      - name: Install Inno Setup
+        shell: pwsh
+        run: |
+          if (-not (Test-Path (Join-Path ${env:ProgramFiles(x86)} 'Inno Setup 6\ISCC.exe'))) {
+            choco install innosetup -y --no-progress
+          }
+
+      - name: Package the zip and the installer
         shell: bash
         run: |
           set -euo pipefail
-          powershell -NoProfile -ExecutionPolicy Bypass -File tools/kitnote/package_windows.ps1
+          powershell -NoProfile -ExecutionPolicy Bypass -File tools/kitnote/package_windows.ps1 -RequireInstaller
           ls -l dist/
 
       - name: Upload the Windows package
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: KitNote-windows
-          path: dist/KitNote-*-win64.zip
+          path: |
+            dist/KitNote-*-win64.zip
+            dist/KitNote-*-win64-setup.exe
           if-no-files-found: error
           retention-days: 30

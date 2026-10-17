@@ -9,7 +9,7 @@ All notable changes to KitNote. The release workflow copies the section for the 
 The first release of KitNote, a drum notation editor built on MuseScore Studio 4.7.5. The engraving, playback
 and editing are MuseScore's; everything around them is made for the drum kit.
 
-Platforms: Windows (x64) and macOS 14.4 or later (Apple silicon and Intel).
+Platforms: Windows (x64; an installer and a portable zip) and macOS 14.4 or later (Apple silicon and Intel).
 
 ### Writing
 - Step grid: write a measure like on a drum machine, sixteenth by sixteenth.
@@ -57,7 +57,7 @@ Platforms: Windows (x64) and macOS 14.4 or later (Apple silicon and Intel).
 - The automatic update check of MuseScore Studio is off.
 
 ### 한국어 요약
-- 플랫폼: Windows(x64), macOS 14.4 이상(Apple 실리콘과 인텔).
+- 플랫폼: Windows(x64; 설치 프로그램과 압축 파일), macOS 14.4 이상(Apple 실리콘과 인텔).
 - 악보 쓰기: 스텝 그리드, 패턴 라이브러리(20가지 그루브와 필인, 루디먼트 9가지), 드럼 탭 붙여넣기, 선택 도구.
 - 읽기와 재생: 드럼 악보 조판(한 줄 네 마디, 구간 문자, 반복 기호), 드럼 키, 고스트 노트와 꾸밈음 재생,
   연습 모드(템포 올리기, 구간 반복, 곡 구조 이동).

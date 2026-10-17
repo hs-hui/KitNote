@@ -46,5 +46,25 @@ if ($LASTEXITCODE -ne 0 -or -not (Test-Path $zip)) {
     Write-Error "tar could not write $zip"
     exit 1
 }
-Remove-Item $stage -Recurse -Force
 '{0}: {1:N1} MB' -f $zip, ((Get-Item $zip).Length / 1MB)
+
+# The installer, from the same folder
+$iscc = @((Get-Command ISCC.exe -ErrorAction SilentlyContinue).Source,
+          (Join-Path $env:LOCALAPPDATA 'Programs\Inno Setup 6\ISCC.exe'),
+          (Join-Path ${env:ProgramFiles(x86)} 'Inno Setup 6\ISCC.exe'),
+          (Join-Path $env:ProgramFiles 'Inno Setup 6\ISCC.exe')) | Where-Object { $_ -and (Test-Path $_) } | Select-Object -First 1
+if ($iscc) {
+    & $iscc /Q "/DAppVersion=$($version -join '.')" "/DSourceDir=$stage" "/DOutputDir=$dist" (Join-Path $PSScriptRoot 'kitnote.iss')
+    $setup = Join-Path $dist "$name-setup.exe"
+    if ($LASTEXITCODE -ne 0 -or -not (Test-Path $setup)) {
+        Write-Error "Inno Setup could not write $setup"
+        exit 1
+    }
+    '{0}: {1:N1} MB' -f $setup, ((Get-Item $setup).Length / 1MB)
+} elseif ($RequireInstaller) {
+    Write-Error 'Inno Setup 6 (ISCC.exe) was not found; install it (winget install JRSoftware.InnoSetup) or leave out -RequireInstaller.'
+    exit 1
+} else {
+    'Inno Setup 6 was not found: no installer, only the zip.'
+}
+Remove-Item $stage -Recurse -Force

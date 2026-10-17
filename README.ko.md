@@ -63,14 +63,13 @@ MuseScore 그대로 두고, 그 밖의 것을 모두 드럼 키트에 맞췄습�
 
 ### Windows
 
-1. `KitNote-<버전>-win64.zip`을 내려받아 압축을 풉니다.
-2. `bin\KitNote.exe`를 바로 실행해도 되고, 아래 명령으로 설치할 수도 있습니다. 설치하면 시작 메뉴 바로가기가 생기고, `.kitnote` 파일이 KitNote로 열리며, '설치된 앱'에서 지울 수 있습니다. 관리자 권한은 필요 없습니다.
+- **설치 프로그램 (추천):** `KitNote-<버전>-win64-setup.exe`를 내려받아 실행합니다.
+  - 관리자 권한 없이 내 계정에 설치하며, 모든 사용자용으로도 설치할 수 있습니다.
+  - 시작 메뉴와 바탕화면 바로가기가 생기고, `.kitnote` 파일이 KitNote로 열립니다.
+  - '설치된 앱'에서 지울 수 있습니다.
+- **압축 파일 (설치 없이 사용):** `KitNote-<버전>-win64.zip`을 내려받아 압축을 풀고 `bin\KitNote.exe`를 실행합니다. 압축을 푼 폴더에서 `powershell -ExecutionPolicy Bypass -File install.ps1`을 실행하면 설치할 수도 있습니다.
 
-   ```powershell
-   powershell -ExecutionPolicy Bypass -File install.ps1
-   ```
-
-   프로그램에 아직 코드 서명이 없어서, 처음 실행하면 Windows SmartScreen 경고가 뜹니다. *추가 정보*를 누른 다음 *실행*을 누르세요.
+프로그램에 아직 코드 서명이 없어서, 처음 실행하면 Windows SmartScreen 경고가 뜹니다. *추가 정보*를 누른 다음 *실행*을 누르세요.
 
 ### macOS
 

@@ -50,14 +50,10 @@ Download from the [Releases](../../releases) page. Every release has a `SHA256SU
 
 ### Windows
 
-1. Download `KitNote-<version>-win64.zip` and unpack it.
-2. Run `bin\KitNote.exe` directly, or install it for your user (Start menu shortcut, `.kitnote` files open with KitNote, removable from *Installed apps*; no administrator rights needed):
+- **Installer (recommended):** download `KitNote-<version>-win64-setup.exe` and run it. It installs KitNote for your user (no administrator rights; it can also install for all users), adds Start menu and desktop shortcuts, opens `.kitnote` files with KitNote, and can be removed from *Installed apps*.
+- **Portable zip:** download `KitNote-<version>-win64.zip`, unpack it and run `bin\KitNote.exe`. To install it from the zip instead, run `powershell -ExecutionPolicy Bypass -File install.ps1` in the unpacked folder.
 
-   ```powershell
-   powershell -ExecutionPolicy Bypass -File install.ps1
-   ```
-
-   The first start shows a Windows SmartScreen warning, because the program is not code-signed yet. Choose *More info*, then *Run anyway*.
+The first start shows a Windows SmartScreen warning, because the program is not code-signed yet. Choose *More info*, then *Run anyway*.
 
 ### macOS
 

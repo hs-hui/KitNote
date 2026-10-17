@@ -123,8 +123,8 @@ jobs:
           fi
 
           cd release
-          if ! compgen -G "*.zip" > /dev/null || ! compgen -G "*.dmg" > /dev/null; then
-            echo "::error::Expected one .zip (Windows) and one .dmg (macOS) in the artifacts."
+          if ! compgen -G "*.zip" > /dev/null || ! compgen -G "*-setup.exe" > /dev/null || ! compgen -G "*.dmg" > /dev/null; then
+            echo "::error::Expected the Windows .zip and -setup.exe and the macOS .dmg in the artifacts."
             ls -la
             exit 1
           fi
@@ -143,5 +143,6 @@ jobs:
           fail_on_unmatched_files: true
           files: |
             release/*.zip
+            release/*-setup.exe
             release/*.dmg
             release/SHA256SUMS.txt

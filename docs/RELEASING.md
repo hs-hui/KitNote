@@ -29,6 +29,7 @@ Windows and macOS, and creates the GitHub Release with the packages, `SHA256SUMS
    before anything is built.
 
 5. When the run finishes, the release is public and lists:
+   - `KitNote-<version>-win64-setup.exe`, the Windows installer (Inno Setup, `tools/kitnote/kitnote.iss`),
    - `KitNote-<version>-win64.zip`, the Windows package,
    - the macOS `.dmg`,
    - `SHA256SUMS.txt`,
@@ -39,7 +40,7 @@ Windows and macOS, and creates the GitHub Release with the packages, `SHA256SUMS
 
 | Workflow | When | What |
 | --- | --- | --- |
-| `build_windows.yml` ("Build: Windows") | push and pull request to `main`, manual, and from `release.yml` | Windows x64 on `windows-2025`. Installs Qt 6.10.2 with aqtinstall (`win64_msvc2022_64`, modules `qt5compat qtnetworkauth qtshadertools qtwebsockets`), sets up MSVC with `ilammy/msvc-dev-cmd`, makes the drum SoundFont with `tools/kitnote/make_drum_soundfont.py`, builds and installs with `ninja_build.sh -t install` and the options of `tools/kitnote/build_windows.bat`, then runs `smoke_test.py`, `mcp_test.py`, `test_audio_chart.py` and `test_install.ps1`. Packs `dist/KitNote-<version>-win64.zip` with `package_windows.ps1` and uploads it as the artifact `KitNote-windows`. |
+| `build_windows.yml` ("Build: Windows") | push and pull request to `main`, manual, and from `release.yml` | Windows x64 on `windows-2025`. Installs Qt 6.10.2 with aqtinstall (`win64_msvc2022_64`, modules `qt5compat qtnetworkauth qtshadertools qtwebsockets`), sets up MSVC with `ilammy/msvc-dev-cmd`, makes the drum SoundFont with `tools/kitnote/make_drum_soundfont.py`, builds and installs with `ninja_build.sh -t install` and the options of `tools/kitnote/build_windows.bat`, then runs `smoke_test.py`, `mcp_test.py`, `test_audio_chart.py` and `test_install.ps1`. Installs Inno Setup, packs `dist/KitNote-<version>-win64.zip` and the installer `dist/KitNote-<version>-win64-setup.exe` with `package_windows.ps1 -RequireInstaller` and uploads both as the artifact `KitNote-windows`. |
 | `build_macos.yml` ("Build: macOS") | the same triggers | Builds the macOS app and the `.dmg`, and uploads the artifact `KitNote-macos`. Its header says what signing it does. |
 | `release.yml` ("Release") | a pushed tag `v*`, or a manual run | Checks the tag against `version.cmake`, calls both build workflows, downloads both artifacts, writes the release notes from `CHANGELOG.md` and `SHA256SUMS.txt`, and creates the release with `softprops/action-gh-release`. The macOS job gets the signing secrets with `secrets: inherit`. |
 
