@@ -1,0 +1,383 @@
+# SPDX-License-Identifier: GPL-3.0-only
+#
+# KitNote
+# Drum notation, built on MuseScore Studio
+#
+# Copyright (C) 2024 MuseScore Limited and others
+# Modified for KitNote, 2026
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 3 as
+# published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>. 
+
+include(GetBuildType)
+include(GetPlatformInfo)
+include(version)
+
+if (NOT KITNOTE_BUILD_CONFIGURATION)
+    set(KITNOTE_BUILD_CONFIGURATION "app")
+endif()
+
+if (NOT KITNOTE_APP_BUILD_MODE)
+    set(KITNOTE_APP_BUILD_MODE "dev")
+endif()
+
+# Set revision for local builds
+# Before need run 'make revision' or 'msvc_build.bat revision'
+include(TryUseLocalRevision)
+
+message(STATUS "KITNOTE_BUILD_CONFIGURATION: ${KITNOTE_BUILD_CONFIGURATION}")
+message(STATUS "KITNOTE_APP_BUILD_MODE: ${KITNOTE_APP_BUILD_MODE}")
+message(STATUS "KITNOTE_BUILD_NUMBER: ${CMAKE_BUILD_NUMBER}")
+
+string(TOUPPER ${KITNOTE_BUILD_CONFIGURATION} BUILD_CONFIGURATION)
+string(TOUPPER ${KITNOTE_APP_BUILD_MODE} BUILD_MODE)
+
+###########################################
+# Setup by mode
+###########################################
+if(BUILD_MODE STREQUAL "DEV")
+    set(KITNOTE_APP_UNSTABLE ON)
+    set(KITNOTE_APP_RELEASE_CHANNEL "dev")
+    set(KITNOTE_APP_NAME_VERSION "${KITNOTE_APP_NAME_VERSION} ${KITNOTE_APP_RELEASE_CHANNEL}")
+    set(KITNOTE_APP_TITLE_VERSION "${KITNOTE_APP_TITLE_VERSION} ${KITNOTE_APP_RELEASE_CHANNEL}")
+    set(KITNOTE_APP_IS_PRERELEASE ON)
+    set(KITNOTE_ALLOW_UPDATE_ON_PRERELEASE OFF)
+endif()
+
+if(BUILD_MODE STREQUAL "TESTING")
+    set(KITNOTE_APP_UNSTABLE OFF)
+    set(KITNOTE_APP_RELEASE_CHANNEL "Testing")
+    set(KITNOTE_APP_NAME_VERSION "${KITNOTE_APP_NAME_VERSION} ${KITNOTE_APP_RELEASE_CHANNEL}")
+    set(KITNOTE_APP_TITLE_VERSION "${KITNOTE_APP_TITLE_VERSION} ${KITNOTE_APP_RELEASE_CHANNEL}")
+    set(KITNOTE_APP_IS_PRERELEASE ON)
+    set(KITNOTE_ALLOW_UPDATE_ON_PRERELEASE ON)
+endif()
+
+if(BUILD_MODE STREQUAL "RELEASE")
+    set(KITNOTE_APP_UNSTABLE OFF)
+    set(KITNOTE_APP_IS_PRERELEASE OFF)
+    set(KITNOTE_ALLOW_UPDATE_ON_PRERELEASE OFF)
+endif()
+
+###########################################
+# Setup paths
+###########################################
+if (OS_IS_MAC)
+    set(KITNOTE_INSTALL_NAME    "Contents/Resources/")
+    set(KITNOTE_SHARE_NAME      "KitNote.app/")
+elseif (OS_IS_WIN)
+    set(KITNOTE_INSTALL_NAME  "")
+    set(KITNOTE_SHARE_NAME    "./")
+else()
+    set(KITNOTE_INSTALL_NAME  "kitnote${KITNOTE_APP_INSTALL_SUFFIX}-${KITNOTE_APP_VERSION_MAJ_MIN}/")
+    set(KITNOTE_SHARE_NAME    "share/")
+endif()
+
+###########################################
+# CONFIGURE: Desktop App
+###########################################
+set(KITNOTE_GENERAL_APP OFF)
+set(KITNOTE_ENABLE_SPLASHSCREEN ON)
+set(KITNOTE_ENABLE_CONSOLEAPP ON)
+if(BUILD_CONFIGURATION STREQUAL "APP")
+    set(KITNOTE_CONFIGURATION_IS_APP ON)
+    set(KITNOTE_GENERAL_APP ON)
+    set(KFW_MODULE_AUDIO_WORKMODE 3) # driver callback + worker rpc
+endif()
+
+# KitNote: a drum chart editor has no use for these, and each one costs size.
+#  - importers for other notation programs (MusicXML and MIDI stay)
+#  - video export, Braille (with its 14 MB of tables), lyrics export
+#  - the UI test robot and its scripts, guided tours
+#  - VST hosting: playback uses the bundled drum SoundFont
+set(KITNOTE_BUILD_IMPEXP_BB_MODULE OFF)
+set(KITNOTE_BUILD_IMPEXP_BWW_MODULE OFF)
+set(KITNOTE_BUILD_IMPEXP_CAPELLA_MODULE OFF)
+set(KITNOTE_BUILD_IMPEXP_GUITARPRO_MODULE OFF)
+set(KITNOTE_BUILD_IMPEXP_MEI_MODULE OFF)
+set(KITNOTE_BUILD_IMPEXP_MNX_MODULE OFF)
+set(KITNOTE_BUILD_IMPEXP_MUSEDATA_MODULE OFF)
+set(KITNOTE_BUILD_IMPEXP_OVE_MODULE OFF)
+set(KITNOTE_BUILD_IMPEXP_TABLEDIT_MODULE OFF)
+set(KITNOTE_BUILD_IMPEXP_LYRICS_MODULE OFF)
+set(KITNOTE_BUILD_BRAILLE_MODULE OFF)
+set(KFW_MODULE_TOURS OFF)
+set(KFW_MODULE_VST OFF)
+
+###########################################
+# CONFIGURE: Web App
+###########################################
+if(BUILD_CONFIGURATION STREQUAL "APP-WEB")
+    set(KITNOTE_CONFIGURATION_IS_APPWEB ON)
+    set(KFW_CONFIGURATION_IS_WEB ON)
+
+    set(QT_ADD_LINGUISTTOOLS OFF)
+    set(QT_ADD_CONCURRENT OFF)
+    set(QT_QPROCESS_SUPPORTED OFF)
+    set(QT_CONCURRENT_SUPPORTED OFF)
+
+    if (OS_IS_WASM)
+        set(KFW_THREADS_SUPPORT OFF)
+    else()
+        set(KFW_THREADS_SUPPORT ON)
+    endif()
+
+    set(KFW_MODULE_UI_SYSTEMDRAG_SUPPORTED OFF)
+    set(KFW_MODULE_UI_SYNCINTERACTIVE_SUPPORTED OFF)
+
+    set(KITNOTE_GENERAL_APP ON)
+    set(KFW_MODULE_SHORTCUTS ON)
+    set(KFW_MODULE_AUDIO ON)
+    set(KFW_MODULE_AUDIO_WORKMODE 2) # driver callback
+    set(KFW_MODULE_MPE ON)
+    set(KITNOTE_BUILD_APPSHELL_MODULE ON)
+    set(KITNOTE_BUILD_PROJECT_MODULE ON)
+    set(KITNOTE_BUILD_INSPECTOR_MODULE ON)
+    set(KITNOTE_BUILD_INSTRUMENTSSCENE_MODULE ON)
+    set(KITNOTE_BUILD_PALETTE_MODULE ON)
+    set(KITNOTE_BUILD_PLAYBACK_MODULE ON)
+
+    set(KFW_ENABLE_UNIT_TESTS OFF)
+
+    #set(KFW_MODULE_DIAGNOSTICS OFF)
+    set(KFW_MODULE_AUDIO_EXPORT OFF)
+    set(KFW_MODULE_AUDIOPLUGINS OFF)
+    set(KFW_MODULE_ACCESSIBILITY OFF)
+    set(KFW_MODULE_DOCKWINDOW OFF)
+    set(KFW_MODULE_MIDI OFF)
+    set(KFW_MODULE_MIDIREMOTE OFF)
+    set(KFW_MODULE_NETWORK OFF)
+    set(KFW_MODULE_VST OFF)
+    set(KFW_MODULE_LANGUAGES OFF)
+    set(KFW_MODULE_MULTIWINDOWS OFF)
+    set(KFW_MODULE_WORKSPACE OFF)
+    set(KFW_MODULE_TOURS OFF)
+
+    set(KITNOTE_ENABLE_SPLASHSCREEN OFF)
+    set(KITNOTE_ENABLE_CONSOLEAPP OFF)
+    set(KITNOTE_BUILD_CONVERTER_MODULE OFF)
+    set(KITNOTE_BUILD_PRINT_MODULE OFF)
+    set(KITNOTE_BUILD_BRAILLE_MODULE OFF)
+    # IMPORT EXPORT MODULES
+    set(KITNOTE_BUILD_IMPEXP_BB_MODULE OFF)
+    set(KITNOTE_BUILD_IMPEXP_BWW_MODULE OFF)
+    set(KITNOTE_BUILD_IMPEXP_CAPELLA_MODULE OFF)
+    set(KITNOTE_BUILD_IMPEXP_MIDI_MODULE OFF)
+    set(KITNOTE_BUILD_IMPEXP_MNX_MODULE OFF)
+    set(KITNOTE_BUILD_IMPEXP_MUSEDATA_MODULE OFF)
+    set(KITNOTE_BUILD_IMPEXP_MUSICXML_MODULE OFF)
+    set(KITNOTE_BUILD_IMPEXP_OVE_MODULE OFF)
+    set(KITNOTE_BUILD_IMPEXP_AUDIOEXPORT_MODULE OFF)
+    set(KITNOTE_BUILD_IMPEXP_IMAGESEXPORT_MODULE OFF)
+    set(KITNOTE_BUILD_IMPEXP_GUITARPRO_MODULE OFF)
+    set(KITNOTE_BUILD_IMPEXP_MEI_MODULE OFF)
+    set(KITNOTE_BUILD_IMPEXP_TABLEDIT_MODULE OFF)
+    set(KITNOTE_BUILD_IMPEXP_LYRICS_MODULE OFF)
+
+    set(KITNOTE_INSTALL_SOUNDFONT OFF)
+
+endif()
+
+###########################################
+# CONFIGURE: VTest
+###########################################
+if(BUILD_CONFIGURATION STREQUAL "VTEST")
+    set(KITNOTE_CONFIGURATION_IS_VTEST ON)
+
+    set(KFW_ENABLE_UNIT_TESTS OFF)
+    set(KFW_MODULE_GLOBAL_LOGGER_DEBUGLEVEL ON)
+    set(KFW_COMPILE_ASAN ON)
+
+    set(KFW_MODULE_ACCESSIBILITY OFF)
+    set(KFW_MODULE_AUDIO OFF)
+    set(KFW_MODULE_AUDIOPLUGINS OFF)
+    set(KFW_MODULE_DIAGNOSTICS OFF)
+    set(KFW_MODULE_DOCKWINDOW OFF)
+    set(KFW_MODULE_LANGUAGES OFF)
+    set(KFW_MODULE_MIDI OFF)
+    set(KFW_MODULE_MIDIREMOTE OFF)
+    set(KFW_MODULE_MPE OFF)
+    set(KFW_MODULE_MULTIWINDOWS OFF)
+    set(KFW_MODULE_NETWORK OFF)
+    set(KFW_MODULE_SHORTCUTS OFF)
+    set(KFW_MODULE_TOURS OFF)
+    set(KFW_MODULE_UI ON)
+    set(KFW_MODULE_UI_QML OFF)
+    set(KFW_MODULE_VST OFF)
+    set(KFW_MODULE_WORKSPACE OFF)
+
+    set(KITNOTE_BUILD_APPSHELL_MODULE OFF)
+    set(KITNOTE_ENABLE_SPLASHSCREEN OFF) 
+    set(KITNOTE_BUILD_BRAILLE_MODULE OFF)
+    set(KITNOTE_BUILD_CONVERTER_MODULE ON)
+    set(KITNOTE_BUILD_INSPECTOR_MODULE OFF)
+    set(KITNOTE_BUILD_INSTRUMENTSSCENE_MODULE OFF)
+    set(KITNOTE_BUILD_NOTATION_MODULE ON)
+    set(KITNOTE_BUILD_NOTATIONSCENE_MODULE OFF)
+    set(KITNOTE_BUILD_PALETTE_MODULE OFF)
+    set(KITNOTE_BUILD_PLAYBACK_MODULE OFF)
+    set(KITNOTE_BUILD_PREFERENCES_MODULE OFF)
+    set(KITNOTE_BUILD_PROJECT_MODULE ON)
+
+    # IMPORT EXPORT MODULES
+    set(KITNOTE_BUILD_IMPEXP_BB_MODULE OFF)
+    set(KITNOTE_BUILD_IMPEXP_BWW_MODULE OFF)
+    set(KITNOTE_BUILD_IMPEXP_CAPELLA_MODULE OFF)
+    set(KITNOTE_BUILD_IMPEXP_MIDI_MODULE OFF)
+    set(KITNOTE_BUILD_IMPEXP_MNX_MODULE OFF)
+    set(KITNOTE_BUILD_IMPEXP_MUSEDATA_MODULE OFF)
+    set(KITNOTE_BUILD_IMPEXP_MUSICXML_MODULE OFF)
+    set(KITNOTE_BUILD_IMPEXP_OVE_MODULE OFF)
+    set(KITNOTE_BUILD_IMPEXP_AUDIOEXPORT_MODULE OFF)
+    set(KITNOTE_BUILD_IMPEXP_IMAGESEXPORT_MODULE ON)
+    set(KITNOTE_BUILD_IMPEXP_GUITARPRO_MODULE ON)
+    set(KITNOTE_BUILD_IMPEXP_MEI_MODULE OFF)
+    set(KITNOTE_BUILD_IMPEXP_TABLEDIT_MODULE OFF)
+    set(KITNOTE_BUILD_IMPEXP_LYRICS_MODULE OFF)
+
+    set(KITNOTE_INSTALL_SOUNDFONT OFF)
+
+
+endif()
+
+###########################################
+# CONFIGURE: UTest
+###########################################
+if(BUILD_CONFIGURATION STREQUAL "UTEST")
+    set(KITNOTE_CONFIGURATION_IS_UTEST ON)
+
+    set(KFW_ENABLE_UNIT_TESTS ON)
+    set(KFW_MODULE_GLOBAL_LOGGER_DEBUGLEVEL ON)
+    set(KFW_MODULE_AUDIO ON)
+    set(KFW_COMPILE_ASAN ON)
+
+    message(STATUS "If you added tests to a module that didn't have them yet, make sure that this module is enabled, see SetupConfigure.cmake")
+    set(KFW_MODULE_LANGUAGES OFF)
+    set(KFW_MODULE_MIDI OFF)
+    set(KFW_MODULE_MIDIREMOTE OFF)
+    set(KFW_MODULE_MPE_QML OFF)
+    set(KFW_MODULE_MULTIWINDOWS OFF)
+    set(KFW_MODULE_NETWORK OFF)
+    set(KFW_MODULE_SHORTCUTS OFF)
+    set(KFW_MODULE_TOURS OFF)
+    set(KFW_MODULE_VST OFF)
+    set(KFW_MODULE_WORKSPACE OFF)
+
+    set(KITNOTE_BUILD_APPSHELL_MODULE OFF)
+    set(KITNOTE_ENABLE_SPLASHSCREEN OFF)
+    set(KITNOTE_BUILD_BRAILLE_QML OFF)
+    set(KITNOTE_BUILD_CONVERTER_MODULE OFF)
+    set(KITNOTE_BUILD_INSPECTOR_MODULE OFF)
+    set(KITNOTE_BUILD_INSTRUMENTSSCENE_MODULE OFF)
+    set(KITNOTE_BUILD_PALETTE_MODULE OFF)
+    set(KITNOTE_BUILD_PLAYBACK_MODULE OFF)
+    set(KITNOTE_BUILD_PREFERENCES_MODULE OFF)
+endif()
+
+###########################################
+# Configure framework
+###########################################
+set(KITNOTE_APP_REVISION ${KITNOTE_REVISION})
+set(KITNOTE_APP_BUILD_NUMBER ${CMAKE_BUILD_NUMBER})
+set(KITNOTE_APP_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
+set(KITNOTE_APP_INSTALL_NAME ${KITNOTE_INSTALL_NAME})
+
+include(${KFW_FRAMEWORK_SRC_PATH}/cmake/KfwSetupConfiguration.cmake)
+
+###########################################
+# Subsystem
+###########################################
+
+if (KFW_MODULE_AUDIO_JACK)
+    if (NOT (OS_IS_LIN OR CC_IS_MINGW))
+        set(KFW_MODULE_AUDIO_JACK OFF)
+    endif()
+endif()
+
+if (KFW_COMPILE_ASAN)
+    set(KFW_ENABLE_CUSTOM_ALLOCATOR OFF)
+endif()
+
+if (NOT KITNOTE_BUILD_NOTATION_MODULE)
+    set(KITNOTE_BUILD_NOTATIONSCENE_MODULE OFF) # hard dependency
+    set(KITNOTE_BUILD_PROJECT_MODULE OFF) # hard dependency
+    set(KITNOTE_BUILD_PALETTE_MODULE OFF) # hard dependency
+endif()
+
+if (NOT KITNOTE_BUILD_NOTATIONSCENE_MODULE)
+    set(KITNOTE_BUILD_PROJECT_QML OFF) # hard dependency
+endif()
+
+if (NOT KFW_MODULE_UI)
+    set(KITNOTE_BUILD_APPSHELL_MODULE OFF) # hard dependency
+endif()
+
+if (NOT KFW_MODULE_UI_QML)
+    set(KITNOTE_BUILD_APPSHELL_QML OFF) # hard dependency
+    set(KITNOTE_BUILD_BRAILLE_QML OFF) # hard dependency
+    set(KITNOTE_BUILD_ENGRAVING_QML OFF) # hard dependency
+    set(KITNOTE_BUILD_INSPECTOR_QML OFF) # hard dependency
+    set(KITNOTE_BUILD_INSTRUMENTSSCENE_QML OFF) # hard dependency
+    set(KITNOTE_BUILD_NOTATIONSCENE_QML OFF) # hard dependency
+    set(KITNOTE_BUILD_PALETTE_QML OFF) # hard dependency
+    set(KITNOTE_BUILD_PLAYBACK_QML OFF) # hard dependency
+    set(KITNOTE_BUILD_PREFERENCES OFF) # hard dependency
+    set(KITNOTE_BUILD_PROJECT_QML OFF) # hard dependency
+endif()
+
+if (NOT KITNOTE_BUILD_APPSHELL_MODULE)
+    set(KITNOTE_BUILD_APPSHELL_QML OFF) # stub does not have QML
+endif()
+
+if (NOT KITNOTE_BUILD_INSTRUMENTSSCENE_MODULE)
+    set(KITNOTE_BUILD_INSTRUMENTSSCENE_QML OFF) # stub does not have QML
+endif()
+
+if (NOT QT_ADD_LINGUISTTOOLS)
+    set(KITNOTE_RUN_LRELEASE OFF) # hard dependency
+endif()
+
+if (KFW_MODULE_NETWORK_WEBSOCKET)
+    set(QT_ADD_WEBSOCKET ON)
+endif()
+
+###########################################
+# Unit tests
+###########################################
+if (NOT KFW_ENABLE_UNIT_TESTS)
+
+    set(KITNOTE_BUILD_BRAILLE_TESTS OFF)
+    set(KITNOTE_BUILD_ENGRAVING_TESTS OFF)
+    set(KITNOTE_BUILD_IMPORTEXPORT_TESTS OFF)
+    set(KITNOTE_BUILD_NOTATION_TESTS OFF)
+    set(KITNOTE_BUILD_NOTATIONSCENE_TESTS OFF)
+    set(KITNOTE_BUILD_PLAYBACK_TESTS OFF)
+    set(KITNOTE_BUILD_PROJECT_TESTS OFF)
+    set(KITNOTE_BUILD_CONVERTER_TESTS OFF)
+
+endif()
+
+if (KITNOTE_GENERAL_APP)
+    if (BUILD_IS_DEBUG)
+        set(KFW_MODULE_GLOBAL_LOGGER_DEBUGLEVEL ON)
+    else()
+        set(KFW_MODULE_GLOBAL_LOGGER_DEBUGLEVEL OFF)
+    endif()
+endif()
+
+add_compile_definitions(KORS_PROFILER_ENABLED)
+
+if (KITNOTE_ENABLE_LOAD_QML_FROM_SOURCE)
+    add_compile_definitions(KITNOTE_ENABLE_LOAD_QML_FROM_SOURCE)
+endif()
+
+configure_file(${CMAKE_CURRENT_LIST_DIR}/src/app/app_config.h.in app_config.h )

@@ -1,0 +1,3 @@
+IDI_ICON1   ICON  DISCARDABLE "AppIcon\\kitnote_AppIcon.ico"
+IDI_ICON2   ICON  DISCARDABLE "MsczIcon\\kitnote_MsczIcon.ico"
+IDI_ICON3   ICON  DISCARDABLE "MscxIcon\\kitnote_MscxIcon.ico"

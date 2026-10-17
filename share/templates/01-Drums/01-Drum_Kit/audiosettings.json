@@ -1,0 +1,10 @@
+{
+    "master": {
+        "balance": 0,
+        "fxChain": {},
+        "muted": false,
+        "solo": false,
+        "volumeDb": 0
+    },
+    "tracks": {}
+}

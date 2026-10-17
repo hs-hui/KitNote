@@ -1,0 +1,70 @@
+KitNote drum model (kitnote_drums.pt)
+=====================================
+
+The model (share/ai/kitnote_drum_model.py) and its training (tools/kitnote/train_drum_model.py,
+tools/kitnote/fetch_egmd_subset.py, tools/kitnote/random_grooves.py, tools/kitnote/render_kits.py,
+tools/kitnote/sfz_kit.py, tools/kitnote/kit_maps.py, tools/kitnote/convert_kits.py, tools/kitnote/separated_stems.py)
+are part of KitNote, GPL-3.0.
+
+Its weights were learned from the following data. The performances (MIDI) are those of the Groove MIDI
+Dataset, and grooves of many styles KitNote's random_grooves.py made; render_kits.py played them - a little
+faster or slower, softer or harder - on the sampled kits below, with the microphones of each kit mixed
+differently every time. Some of them separated_stems.py put into songs - a band played with MuseScore's MS
+Basic SoundFont (MIT) - and took out again with Demucs (MIT), as KitNote does with a recording. The audio
+changes made while training (rooms, colour, noise, tones, what a separation leaves) are KitNote's own.
+
+Recorded performances, CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/):
+
+- Groove MIDI Dataset v1.0.0 - Jon Gillick, Adam Roberts, Jesse Engel, Douglas Eck, David Bamman:
+  "Learning to Groove with Inverse Sequence Transformations", ICML 2019. Google Magenta.
+  https://magenta.tensorflow.org/datasets/groove
+
+- Expanded Groove MIDI Dataset (E-GMD) v1.0.0 - Lee Callender, Curtis Hawthorne, Jesse Engel:
+  "Improving Perceptual Quality of Drum Transcription with the Expanded Groove MIDI Dataset", 2020.
+  Google Magenta. https://magenta.tensorflow.org/datasets/e-gmd  (a part of it: up to 120 minutes of each
+  of its 43 kits, as fetch_egmd_subset.py chooses)
+
+Sampled kits the performances were played on:
+
+- DRSKit 2.1 - the DrumGizmo team and Jes Eiler (DRSDrums). CC BY 4.0.
+  https://drumgizmo.org/wiki/doku.php?id=kits:drskit
+- MuldjordKit 3 - the DrumGizmo team (Lars Muldjord). CC BY 4.0.
+  https://drumgizmo.org/wiki/doku.php?id=kits:muldjordkit
+- CrocellKit 1.1 - the DrumGizmo team. CC BY 4.0.
+  https://drumgizmo.org/wiki/doku.php?id=kits:crocellkit
+- StemGMD single hits - Alessandro Ilic Mezza, Riccardo Giampiccolo, Alberto Bernardini, Augusto Sarti:
+  "Toward Deep Drum Source Separation" / "StemGMD: A Large-Scale Multi-Kit Audio Dataset for Deep Drums
+  Demixing" (Politecnico di Milano). CC BY 4.0. https://zenodo.org/records/7882857  (the single strokes of its
+  ten acoustic kits)
+- Virtuosity Drums 0.925 - Versilian Studios. CC0 1.0. https://versilian-studios.com/virtuosity-drums/
+- Salamander Drumkit v1 - Alexander Holm. CC BY-SA 3.0, whose share-alike condition, as its author states,
+  applies to the samples themselves and to sample libraries made with them, not to other works.
+  https://github.com/endolith/Salamander-Drumkit
+- The Aasimonster 2.1 - the DrumGizmo team: sampled by Deva, prepared for DrumGizmo by Chaot4 and Deva, bleed
+  control by Henry Järvinen. CC BY 4.0. https://drumgizmo.org/wiki/doku.php?id=kits:the_aasimonster
+- ShittyKit 1.2 - Herr Doktor Sardonicus (DrumGizmo). CC BY 4.0.
+  https://drumgizmo.org/wiki/doku.php?id=kits:shittykit
+- Big Rusty Drums 1.000, Swirly Drums 1.104, Gogodze Phu Vol II 1.001 - Karoryfer Samples. CC0 1.0.
+  https://github.com/sfzinstruments/karoryfer.big-rusty-drums, .../karoryfer.swirly-drums,
+  .../karoryfer.gogodze-phu-vol-ii
+- Sam's Sonor - Sam Greene (Sonor Force 3001); SFZ by kinwie. CC BY-SA 4.0.
+  https://github.com/sfzinstruments/SamsSonor
+- AVL Drumkits (Black Pearl 2023, Blonde Bop, Blonde Bop HotRod, Red Zeppelin 2023) - Glen MacArthur (AV
+  Linux). CC BY-SA 3.0. http://www.bandshed.net/avldrumkits/
+- BJA Pacific - sampled by Bransin James Anderson, Hydrogen kit by Luc Tanguay. CC BY-SA 3.0 US.
+- Millo MultiLayered 3 - Emillo (emillo.net). GPL.
+- SF3007-2011-Set-03 - Rainer Steffen Hain. WTFPL.
+- TR808 Emulation Kit, Electric Empire Kit, Hard Electro 1 - ArtemioLabs; VariBreaks - Sineshine. GPL.
+  (Hydrogen drum kits: https://github.com/hydrogen-music/hydrogen,
+  https://sourceforge.net/projects/hydrogen/files/Sound%20Libraries/)
+- FreePats Synthesizer Percussion - the FreePats project. CC0 1.0.
+  https://freepats.zenvoid.org/Percussion/electric-percussion.html
+- Jazz kit - bigjoedrummer and shpira (Freesound), compiled by Peter Semiletov. CC0 1.0.
+- El Nacho drum kit - Paolo D'Emilio (copyc4t, Freesound). CC BY 4.0.
+  https://freesound.org/people/copyc4t/packs/22277/
+- Avangard - Peter Semiletov. Public domain. https://github.com/psemiletov/drum_sklad
+- MS Basic drum kits (standard, room, power, electronic, TR-808, jazz, brush) - MuseScore's sound font, from
+  FluidR3 (Frank Wen), FluidR3Mono (Michael Cowgill) and MuseScore_General (S. Christian Collins). MIT.
+- GeneralUser GS v2.0.3 drum kits (standard, room, power, electronic, 808/909, dance, jazz, brush) -
+  S. Christian Collins. GeneralUser GS License v2.0.
+  https://github.com/mrbumpy409/GeneralUser-GS/blob/main/documentation/LICENSE.txt

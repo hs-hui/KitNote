@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2018-2025 MuseScore Limited and others. KitNote is based on MuseScore Studio. -->
+<component type="desktop-application">
+    <!--
+        Please write XML tags in the order they are specified in
+        https://www.freedesktop.org/software/appstream/docs/chap-Metadata.html#spec-component-filespec
+
+        After editing, run either of these commands to check for errors in this file:
+            $  appstreamcli validate [filename]
+            $  appstream-util validate [filename]
+    -->
+    <id>org.kitnote.KitNote@KITNOTE_APP_INSTALL_SUFFIX@</id>
+    <metadata_license>CC0-1.0</metadata_license><!-- License of this file -->
+    <project_license>GPL-3.0-only</project_license>
+    <name>KitNote</name>
+    <summary>Write, play and print drum notation</summary>
+    <description>
+        <p>KitNote is an open source drum notation editor. It is a drum-only fork of MuseScore Studio and keeps its WYSIWYG editor, audio playback and export tools, focused on drum kit scores.</p>
+        <p>KitNote supports:</p>
+        <ul>
+            <li>Drum kit notation with a drum tab entry</li>
+            <li>Drum kit sounds and playback</li>
+            <li>Import and export of MusicXML and MIDI, and export to PDF</li>
+            <li>Transcription of drum parts from audio recordings</li>
+        </ul>
+    </description>
+    <!-- <categories> in .desktop file -->
+    <!-- <keywords> in .desktop file -->
+    <launchable type="desktop-id">org.kitnote.KitNote@KITNOTE_APP_INSTALL_SUFFIX@.desktop</launchable>
+    <provides>
+        <!-- <mediatype> in .desktop file as MimeType -->
+        <binary>kitnote@KITNOTE_APP_INSTALL_SUFFIX@</binary>
+        <id>org.kitnote.KitNote@KITNOTE_APP_INSTALL_SUFFIX@.desktop</id>
+    </provides>
+    <supports>
+        <control>pointing</control>
+        <control>keyboard</control>
+        <control>console</control>
+        <control>touch</control>
+        <internet>always</internet>
+    </supports>
+    <developer id="org.kitnote">
+        <name>KitNote contributors</name>
+    </developer>
+    <translation type="qt">kitnote@KITNOTE_APP_INSTALL_SUFFIX@-@KITNOTE_APP_VERSION_MAJ_MIN@/locale/instruments</translation>
+    <translation type="qt">kitnote@KITNOTE_APP_INSTALL_SUFFIX@-@KITNOTE_APP_VERSION_MAJ_MIN@/locale/kitnote</translation>
+    <translation type="qt">kitnote@KITNOTE_APP_INSTALL_SUFFIX@-@KITNOTE_APP_VERSION_MAJ_MIN@/locale/qt</translation>
+    <translation type="qt">kitnote@KITNOTE_APP_INSTALL_SUFFIX@-@KITNOTE_APP_VERSION_MAJ_MIN@/locale/qtbase</translation>
+    <content_rating type="oars-1.1" />
+    <!-- GNOME extensions -->
+    <kudos>
+        <kudo>HiDpiIcon</kudo>
+        <kudo>HighContrast</kudo>
+        <kudo>ModernToolkit</kudo>
+        <kudo>UserDocs</kudo>
+    </kudos>
+</component>

@@ -1,0 +1,24 @@
+name: Feature request
+description: Suggest something new for KitNote, or a change to something it already does.
+type: Feature
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What do you want to do, and what gets in the way today?
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: Your idea
+      description: How could KitNote help? A short description is enough.
+    validations:
+      required: true
+  - type: textarea
+    id: other
+    attributes:
+      label: Anything else
+      description: Examples from other programs, or a drum chart that shows the need.

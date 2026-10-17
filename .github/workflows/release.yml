@@ -1,0 +1,147 @@
+name: 'Release'
+
+# Builds Windows and macOS with the build workflows, then creates the GitHub Release:
+# the packages, SHA256SUMS.txt, and the notes from the section of CHANGELOG.md for the version.
+# A pushed tag v<version> makes a public release. A manual run makes a draft.
+# See docs/RELEASING.md.
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to release, for example v1.0.0. Created at the commit of this run if it does not exist yet. A manual run makes a draft release.'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.event_name == 'push' && github.ref_name || inputs.tag }}
+  cancel-in-progress: false
+
+jobs:
+  check_version:
+    name: Check the tag against version.cmake
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.check.outputs.tag }}
+      version: ${{ steps.check.outputs.version }}
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+
+      - name: Compare the tag with KitNote's version
+        id: check
+        shell: bash
+        env:
+          TAG_INPUT: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          if [ "$GITHUB_EVENT_NAME" = "push" ]; then
+            TAG="$GITHUB_REF_NAME"
+          else
+            TAG="$TAG_INPUT"
+          fi
+          part() {
+            sed -n "s/^set(KITNOTE_APP_VERSION_$1 \"\([0-9][0-9]*\)\")/\1/p" version.cmake
+          }
+          VERSION="$(part MAJOR).$(part MINOR).$(part PATCH)"
+          if [ "$TAG" != "v$VERSION" ]; then
+            echo "::error::Tag '$TAG' does not match KITNOTE_APP_VERSION in version.cmake ($VERSION). Expected tag v$VERSION."
+            exit 1
+          fi
+          # A tag that already exists must point at the commit this run builds. Otherwise the release
+          # would carry binaries of one commit under the tag of another. Peeled (annotated) tags win.
+          REMOTE_SHA="$(git ls-remote --tags origin "refs/tags/$TAG" | awk 'index($2, "^{}") { peeled = $1; next } { direct = $1 } END { print (peeled != "" ? peeled : direct) }')"
+          if [ -n "$REMOTE_SHA" ] && [ "$REMOTE_SHA" != "$GITHUB_SHA" ]; then
+            echo "::error::Tag $TAG already exists at $REMOTE_SHA, not at this run's commit $GITHUB_SHA. Use a new version, or run the release from that commit."
+            exit 1
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Releasing $TAG"
+
+  windows:
+    name: Build Windows
+    needs: check_version
+    uses: ./.github/workflows/build_windows.yml
+    with:
+      full_tests: true
+
+  macos:
+    name: Build macOS
+    needs: check_version
+    uses: ./.github/workflows/build_macos.yml
+    with:
+      build_mode: stable
+    # The Apple signing and notarization secrets are read by build_macos.yml; without this
+    # the reusable workflow gets no secrets and the app is ad-hoc signed.
+    secrets: inherit
+
+  release:
+    name: Create the GitHub Release
+    needs: [check_version, windows, macos]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+
+      - name: Download the Windows package
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
+        with:
+          name: KitNote-windows
+          path: release
+
+      - name: Download the macOS package
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
+        with:
+          name: KitNote-macos
+          path: release
+
+      - name: Write the release notes and SHA256SUMS.txt
+        shell: bash
+        env:
+          VERSION: ${{ needs.check_version.outputs.version }}
+        run: |
+          set -euo pipefail
+
+          # The notes are the CHANGELOG.md section under "## <version>", up to the next "## " heading.
+          awk -v heading="## $VERSION" '
+            $0 == heading { inside = 1; next }
+            inside && /^## / { exit }
+            inside { print }
+          ' CHANGELOG.md | sed '/./,$!d' > release-notes.md
+          if [ ! -s release-notes.md ]; then
+            echo "::error::CHANGELOG.md has no section '## $VERSION' with text in it."
+            exit 1
+          fi
+
+          cd release
+          if ! compgen -G "*.zip" > /dev/null || ! compgen -G "*.dmg" > /dev/null; then
+            echo "::error::Expected one .zip (Windows) and one .dmg (macOS) in the artifacts."
+            ls -la
+            exit 1
+          fi
+          sha256sum * > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - name: Create the release
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
+        with:
+          tag_name: ${{ needs.check_version.outputs.tag }}
+          target_commitish: ${{ github.sha }}
+          name: KitNote ${{ needs.check_version.outputs.version }}
+          body_path: release-notes.md
+          draft: ${{ github.event_name == 'workflow_dispatch' }}
+          prerelease: false
+          fail_on_unmatched_files: true
+          files: |
+            release/*.zip
+            release/*.dmg
+            release/SHA256SUMS.txt

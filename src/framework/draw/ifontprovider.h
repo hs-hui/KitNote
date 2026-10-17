@@ -1,0 +1,63 @@
+/*
+ * SPDX-License-Identifier: GPL-3.0-only
+ *
+ * KitNote
+ * Drum notation, built on MuseScore Studio
+ *
+ * Copyright (C) 2021 MuseScore Limited and others
+ * Modified for KitNote, 2026
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 3 as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+#ifndef KFW_DRAW_IFONTPROVIDER_H
+#define KFW_DRAW_IFONTPROVIDER_H
+
+#include "global/modularity/imoduleinterface.h"
+#include "global/io/path.h"
+#include "global/types/string.h"
+
+#include "types/font.h"
+#include "types/geometry.h"
+
+namespace kfw::draw {
+class IFontProvider : MODULE_GLOBAL_INTERFACE
+{
+    INTERFACE_ID(kfw::draw::IFontProvider)
+
+public:
+    virtual ~IFontProvider() = default;
+
+    virtual int addSymbolFont(const String& family, const io::path_t& path) = 0;
+
+    virtual double lineSpacing(const Font& f) const = 0;
+    virtual double xHeight(const Font& f) const = 0;
+    virtual double height(const Font& f) const = 0;
+    virtual double capHeight(const Font& f) const = 0;
+    virtual double ascent(const Font& f) const = 0;
+    virtual double descent(const Font& f) const = 0;
+
+    virtual bool inFont(const Font& f, char32_t ucs4) const = 0;
+
+    // Text
+    virtual double horizontalAdvance(const Font& f, const String& string) const = 0;
+    virtual double horizontalAdvance(const Font& f, char32_t ucs4) const = 0;
+
+    virtual RectF boundingRect(const Font& f, const String& string) const = 0;
+    virtual RectF boundingRect(const Font& f, char32_t ucs4) const = 0;
+
+    virtual RectF tightBoundingRect(const Font& f, const String& string) const = 0;
+};
+}
+
+#endif // KFW_DRAW_IFONTPROVIDER_H

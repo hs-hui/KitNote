@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Using KitNote</title>
+<style>
+:root { color-scheme: light dark; --fg: #1d2330; --bg: #ffffff; --muted: #5d6677; --line: #d8dde6; --key: #eef1f6; --accent: #2e6fe0; }
+@media (prefers-color-scheme: dark) {
+  :root { --fg: #e6e9ef; --bg: #1b1f27; --muted: #9aa3b2; --line: #343b48; --key: #2a303b; --accent: #7aa7ff; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.65 Pretendard, "Segoe UI", "Malgun Gothic", system-ui, sans-serif; }
+main { max-width: 820px; margin: 0 auto; padding: 40px 20px 80px; }
+h1 { font-size: 30px; margin: 0 0 12px; }
+h2 { font-size: 21px; margin: 44px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+h3 { font-size: 17px; margin: 28px 0 8px; }
+p, li { margin: 8px 0; }
+ol, ul { padding-left: 24px; }
+pre { background: var(--key); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; font: 0.9em/1.35 Consolas, "Cascadia Mono", monospace; overflow-x: auto; }
+code { background: var(--key); border: 1px solid var(--line); border-radius: 5px; padding: 1px 6px; font: 0.88em Consolas, "Cascadia Mono", monospace; white-space: nowrap; }
+table { border-collapse: collapse; margin: 12px 0; width: 100%; }
+th, td { border: 1px solid var(--line); padding: 7px 12px; text-align: left; vertical-align: top; }
+th { background: var(--key); font-weight: 600; }
+nav { margin: 20px 0 0; padding: 12px 18px; border: 1px solid var(--line); border-radius: 8px; }
+nav a { color: var(--accent); text-decoration: none; margin-right: 16px; white-space: nowrap; }
+nav a:hover { text-decoration: underline; }
+footer { margin-top: 56px; color: var(--muted); font-size: 13px; }
+@media (max-width: 600px) {
+  main { padding: 24px 14px 60px; overflow-wrap: anywhere; }
+  code { white-space: normal; }
+  th, td { padding: 6px 8px; }
+}
+</style>
+</head>
+<body>
+<main>
+<h1>Using KitNote</h1><nav><a href="#s1">Installing</a><a href="#s2">Creating a score</a><a href="#s3">The screen</a><a href="#s4">Entering notes</a><a href="#s5">The step grid</a><a href="#s6">Song structure</a><a href="#s7">Practising with a rising tempo</a><a href="#s8">Pattern library</a><a href="#s9">Inserting drum patterns</a><a href="#s10">Drum key</a><a href="#s11">Measure-repeat signs (%)</a><a href="#s12">The percussion panel</a><a href="#s13">Frequently used signs</a><a href="#s14">Playback</a><a href="#s15">Saving and exporting</a><a href="#s16">Drum scores with AI</a><a href="#s17">Drum score from a recording</a><a href="#s18">Playing along with the recording</a><a href="#s19">Files KitNote opens</a><a href="#s20">Other shortcuts</a></nav>
+<p>KitNote is an editor for drum and percussion scores only. Editing works as in MuseScore Studio 4, so anything you know from MuseScore carries over.</p>
+<h2 id="s1">Installing</h2>
+<p><code>bin\KitNote.exe</code> in the unpacked folder runs as it is. To have KitNote in the Start menu and open <code>.kitnote</code> files with a double-click, right-click <code>install.ps1</code> in the unpacked folder and choose <strong>Run with PowerShell</strong>. No administrator rights are needed. Remove it from <strong>Installed apps</strong> in Windows Settings.</p>
+<h2 id="s2">Creating a score</h2>
+<p>The buttons in the <strong>Start with</strong> row at the bottom of the Home page (drum kit, four-piece, large, battery percussion) open a 4/4 score of 32 measures at once. To choose the time signature or length first, do this:</p>
+<ol>
+<li>Press <code>Ctrl+N</code>, or <strong>New score</strong> on the Home page.
+</li>
+<li>The <strong>Choose instruments</strong> tab already holds a drum kit. To use other percussion, pick it from the list on the left and add it. To start from a prepared setup, use the <strong>Create from template</strong> tab.
+</li>
+<li><strong>Next</strong> lets you set the time signature, tempo and number of measures; <strong>Done</strong> opens the score.
+</li>
+</ol>
+<h2 id="s3">The screen</h2>
+<p>A new score has four measures to a line. While it has no notes, <code>An empty score. Begin with:</code> at the top offers <code>Note input</code> and <code>Step grid</code> (at the first measure) and <code>A groove in every measure</code> (every measure selected and the pattern library open).</p>
+<p>A score opens without panels: just the score. Instead of a row of toolbars at the top, a rail floats at the left edge of the score with the things you need all the time: back to Home, note input, the note-input toolbar, the drum pads (percussion panel), the palettes, rewind, play, loop and metronome, the mixer, undo and redo, the step grid, the pattern library, practice with a rising tempo, the song structure, the position and tempo, and the command search. A click on the position and tempo steps the playback speed through 100, 75 and 50% for practising.</p>
+<p>Everything else is reached with <code>Ctrl+K</code> (or the magnifying glass at the foot of the rail): type part of a name and press <code>Enter</code>. The drum pads and the note-input toolbar open by themselves with note input and close with it (<code>Preferences → Percussion</code> changes when the pads open). <code>View → Restore the default layout</code> brings this layout back after you changed it.</p>
+<p><code>Edit → Preferences → Appearance → Toolbar position</code> moves the rail: <code>Top</code>, <code>Bottom</code>, <code>Left</code> or <code>Right</code>, and it moves at once. At the top and the bottom the rail lies flat.</p>
+<h2 id="s4">Entering notes</h2>
+<ol>
+<li>Click the measure (rest) where input should start. When a score opens, its first measure is already selected and the percussion panel at the bottom shows the pads.
+</li>
+<li>Press <code>N</code> to enter note-input mode.
+</li>
+<li>Choose a duration with the number keys.
+<table><thead><tr><th>Key</th><th>Duration</th></tr></thead><tbody>
+<tr><td><code>1</code></td><td>64th note</td></tr>
+<tr><td><code>2</code></td><td>32nd note</td></tr>
+<tr><td><code>3</code></td><td>16th note</td></tr>
+<tr><td><code>4</code></td><td>8th note</td></tr>
+<tr><td><code>5</code></td><td>Quarter note</td></tr>
+<tr><td><code>6</code></td><td>Half note</td></tr>
+<tr><td><code>7</code></td><td>Whole note</td></tr>
+<tr><td><code>.</code></td><td>Dotted</td></tr>
+<tr><td><code>0</code></td><td>Rest</td></tr>
+</tbody></table>
+</li>
+<li>Click a pad, or press the letter shown on it. The note is entered and the cursor moves on. The drum kit's default keys are:
+<table><thead><tr><th>Key</th><th>Drum</th></tr></thead><tbody>
+<tr><td><code>A</code></td><td>Bass drum</td></tr>
+<tr><td><code>B</code></td><td>Snare</td></tr>
+<tr><td><code>C</code></td><td>Closed hi-hat</td></tr>
+<tr><td><code>D</code></td><td>Open hi-hat</td></tr>
+<tr><td><code>E</code></td><td>Crash cymbal</td></tr>
+<tr><td><code>F</code></td><td>Ride cymbal</td></tr>
+<tr><td><code>G</code></td><td>High tom</td></tr>
+<tr><td><code>H</code></td><td>Floor tom</td></tr>
+</tbody></table>
+</li>
+<li>To add a drum on the same beat, hold <code>Shift</code> and press its letter.
+</li>
+<li>Leave note-input mode with <code>Esc</code> or <code>N</code>.
+</li>
+</ol>
+<p>Drums played with the hands go to voice 1 (stems up) and drums played with the feet to voice 2 (stems down) by themselves.</p>
+<h2 id="s5">The step grid</h2>
+<p>A measure can be written the way a drum machine is programmed. Select a measure (or a note in it) and press the grid button on the rail: the measure appears as a grid, a row for every drum and a step for every sixteenth note. A click puts a drum on a step or takes it off, and the score follows at once. <code>Ctrl+Z</code> undoes it.</p>
+<ul>
+<li>Drums played with the hands go to voice 1, the bass drum and pedal hi-hat to voice 2.
+</li>
+<li>A right-click steps a stroke through accented, ghost note and plain. An accent shows as <code>&gt;</code>, a ghost note as an outlined step.
+</li>
+<li>A drum is heard when it is put on a step. The arrows at the top right of the card move to the next and previous measure.
+</li>
+<li>While the measure plays, the step that sounds lights up.
+</li>
+<li><code>Copy to next measure</code> writes the measure into the next one and moves there. <code>Clear</code> empties the measure.
+</li>
+<li>A measure edited in the grid loses its sticking, grace notes and dynamics: add those when the grid work is done.
+</li>
+<li>A measure that is a repeat sign (%) has to be written out before it can be edited.
+</li>
+<li>A measure in triplet eighths (a shuffle, say) appears as a grid with three steps to a beat. In an empty measure the <code>Triplets</code> button chooses that grid.
+</li>
+<li>A measure with notes shorter than its steps, such as 32nd notes, is not shown.
+</li>
+</ul>
+<h2 id="s6">Song structure</h2>
+<p>The list button on the rail (or <code>song structure</code> in the command search) shows the sections of the chart: name, first measure, length. A click on a section goes to its first measure. To start a section, select the measure and press one of the names under the list (Intro, Verse, Pre-Chorus, Chorus, Bridge, Solo, Interlude, Outro): the name is put over that measure, and the section runs up to the measure before the next one. A section name can be edited with a double-click, or selected and deleted.</p>
+<p>Once there are sections the card also lists grooves. Select a measure in a section and press a groove: the whole section is filled with it, and with <code>End the section with a fill</code> on, the last two beats of its last measure become a fill. Divide the song into sections, pick a groove for each, and the skeleton of the chart is there.</p>
+<p>The step grid, practice and song structure cards show one at a time and can be dragged by their background.</p>
+<h2 id="s7">Practising with a rising tempo</h2>
+<p>The clock button on the rail (or <code>practice</code> in the command search) opens the practice card. Select the measures to loop and press <code>Start</code>: they repeat, slowly at first (60% by default), a little faster with every pass (5%), up to the target (100%). Without a selection the whole score is looped. <code>Stop</code> ends playback and puts the tempo back.</p>
+<p>At the foot of the same card, tap <code>Tap the tempo</code> on the beat a few times: the speed shows in BPM, and <code>Use as the tempo of the score</code> rewrites the tempo mark at the beginning of the score (or puts one there).</p>
+<h2 id="s8">Pattern library</h2>
+<p>The <code>%</code> button on the rail (or <code>Pattern library</code> in the command search) opens a card with the grooves, the fills and the rudiments. Every pattern shows one measure as a small step grid - a row for every drum, the sticking under a rudiment - so you see what will be written. Select measures and click a pattern to write it there. It is the same command as <code>Add → Drum patterns</code> below.</p>
+<p>At the top of the <code>Fills</code> tab, <code>Random fill: a measure</code> and <code>Random fill: half a measure</code> make up a fill on the spot and write it into the selected measure - sixteenth notes from the snare down the toms, the half measure after two beats of the rock beat. Click again for another one.</p>
+<p>The <code>My patterns</code> tab collects measures of your own. Select a measure and click <code>Keep the selected measure</code> (a name is optional): a tile appears, and from then on it can be written into any score like the other patterns. The <code>×</code> of a tile throws it away. Strokes, accents, ghost notes and open hi-hats are kept; marks such as flams and sticking are not.</p>
+<h2 id="s9">Inserting drum patterns</h2>
+<p>Common rhythms do not have to be entered note by note.</p>
+<ol>
+<li>Select the measures to fill. For several measures, click the first one, then hold <code>Shift</code> and click the last one.
+</li>
+<li>Choose a pattern from <code>Add → Drum patterns</code>. Right-clicking a measure or a note shows the same menu.
+<table><thead><tr><th>Pattern</th><th>What it writes</th></tr></thead><tbody>
+<tr><td>Rock beat (8th-note hi-hat)</td><td>Hi-hat in 8th notes, snare on 2 and 4, bass drum on 1 and 3</td></tr>
+<tr><td>Rock beat with pushed kick</td><td>The same, with the bass drum on 1, the "and" of 2, and 3</td></tr>
+<tr><td>Rock beat (16th-note hi-hat)</td><td>Hi-hat in 16th notes</td></tr>
+<tr><td>Rock beat (quarter-note hi-hat)</td><td>Hi-hat in quarter notes</td></tr>
+<tr><td>Four on the floor</td><td>Bass drum on every beat</td></tr>
+<tr><td>Half-time beat</td><td>Snare on 3 only</td></tr>
+<tr><td>Rock beat on the ride</td><td>Ride cymbal instead of the hi-hat</td></tr>
+<tr><td>Rock beat starting with a crash</td><td>A crash on the first beat of the first measure only</td></tr>
+<tr><td>Motown beat (snare on every beat)</td><td>Hi-hat in 8th notes, snare on every beat</td></tr>
+<tr><td>Shuffle beat</td><td>Hi-hat on the first and third note of each triplet, snare on 2 and 4</td></tr>
+<tr><td>Slow blues beat (triplet hi-hat)</td><td>Hi-hat in triplet eighth notes, snare on 2 and 4</td></tr>
+<tr><td>Jazz ride (swing)</td><td>The swing pattern on the ride cymbal, pedal hi-hat on 2 and 4</td></tr>
+<tr><td>Disco beat (open hi-hat off the beat)</td><td>Bass drum on every beat, open hi-hat between the beats</td></tr>
+<tr><td>Bossa nova</td><td>Hi-hat in 8th notes with the bossa nova rhythm on cross-stick and bass drum</td></tr>
+<tr><td>Reggae one drop</td><td>Hi-hat in 8th notes, bass drum and cross-stick together on 3 only</td></tr>
+<tr><td>6/8 beat</td><td>For 6/8 time: hi-hat in 8th notes, bass drum on 1, snare on 4</td></tr>
+<tr><td>Fill: 16th notes on the snare</td><td>One measure of 16th notes on the snare</td></tr>
+<tr><td>Fill: 16th notes down the toms</td><td>Snare → high tom → mid tom → floor tom</td></tr>
+<tr><td>Fill: triplets down the toms</td><td>The same order in triplet eighth notes</td></tr>
+<tr><td>Fill: beat, then a fill on 3 and 4</td><td>The rock beat on 1 and 2, sixteenth notes from the snare down the toms on 3 and 4</td></tr>
+</tbody></table>
+<p>In 6/8, 9/8 and 12/8 measures the patterns follow the dotted-quarter beat (bass drum on the odd beats, snare on the even ones).</p>
+</li>
+<li>The measures stay selected, so pressing <code>R</code> repeats them into the following measures.
+</li>
+</ol>
+<h3>Rudiments</h3>
+<p><code>Add → Rudiments</code> has nine snare rudiments (single stroke roll, double stroke roll, single paradiddle, single stroke triplets, double paradiddle, paradiddle-diddle, flams, flam tap, flam accent). They are inserted like the drum patterns and come with their R and L sticking; the flams have their grace notes, the paradiddles and the flam accent their accents. The sticking runs on over the barlines.</p>
+<p>Whatever was in the selected measures is replaced by the pattern; <code>Ctrl+Z</code> brings it back. Patterns are not available in note-input mode: press <code>Esc</code> first.</p>
+<h2 id="s10">Drum key</h2>
+<p><code>Add → Drum key at the start of the score</code> puts a line in front of the first measure that shows each drum the score uses, with its name under the note. In a score without notes yet, it shows the drums that have a pad shortcut.</p>
+<ul>
+<li>The key's measures are not counted in the measure numbers and make no sound on playback.
+</li>
+<li>The grey <code>♩ = 600</code> and time signature over the key in the editor are hidden marks that let playback pass the key at once. They do not appear in print or in exported files.
+</li>
+<li>Run the command again after adding notes and the key is renewed for the drums the score uses now. To remove it, choose <code>Add → Remove the drum key</code>.
+</li>
+<li>When there are few drums, an empty frame after the key keeps it from stretching over the whole line.
+</li>
+<li>The names are lyrics, so a double-click lets you change them.
+</li>
+</ul>
+<h2 id="s11">Measure-repeat signs (%)</h2>
+<p>Measures that carry on with the same rhythm can be written as repeat signs.</p>
+<ul>
+<li><code>Tools → Replace repeated measures with repeat signs</code>: every measure that has the same content as the one before it becomes <code>%</code>. With a range of measures selected only that range is done, otherwise the whole score. The first measure after a repeat barline or a double barline stays written out, and so does a measure with a dynamic, a tempo or text (the equal measures after it are replaced). Sticking counts as content: two measures are the same when notes and sticking both are.
+</li>
+<li><code>Tools → Write out measure-repeat signs</code>: turns <code>%</code> back into notes, for when one of the repeated measures has to be changed.
+</li>
+</ul>
+<p>On playback a <code>%</code> measure sounds exactly like the measure before it.</p>
+<h2 id="s12">The percussion panel</h2>
+<ul>
+<li><strong>Write / Preview</strong>: in Preview a pad only plays its sound and enters nothing.
+</li>
+<li><strong>Layout → Edit layout</strong>: drag pads to other places, add or remove rows.
+</li>
+<li><strong>Layout → Pad names / Notation preview</strong>: show the note as it appears on the staff instead of the drum's name.
+</li>
+<li>Right-click a pad for <strong>Define keyboard shortcut</strong> and <strong>Delete pad</strong>.
+</li>
+<li><strong>Customize kit</strong>: change each drum's name, notehead, staff line, voice and shortcut. MuseScore drumset files (<code>.drm</code>) can be loaded and saved.
+</li>
+</ul>
+<h2 id="s13">Frequently used signs</h2>
+<p>Pick them from the <strong>Palettes</strong> on the left, or select a note and click the palette item. The <strong>Drum techniques</strong> palette at the top gathers accent, open and closed hi-hat signs, ghost note, flam, drag, rolls and sticking.</p>
+<table><thead><tr><th>Sign</th><th>Where</th></tr></thead><tbody>
+<tr><td>Accent</td><td>The <code>&gt;</code> button in the toolbar, <code>Shift+V</code>, or the Articulations palette</td></tr>
+<tr><td>Ghost note (parentheses)</td><td>The <code>( )</code> button in the toolbar, or <code>Shift+9</code>. It plays softer than the other notes.</td></tr>
+<tr><td>Open hi-hat (<code>o</code>) / closed (<code>+</code>)</td><td>The Drum techniques palette. A closed hi-hat note with <code>o</code> on it plays the open hi-hat sound.</td></tr>
+<tr><td>Flam</td><td>The grace-note button in the toolbar, or <code>/</code></td></tr>
+<tr><td>Drag, ruff</td><td>The Grace notes palette</td></tr>
+<tr><td>Roll (tremolo)</td><td>The Tremolos palette</td></tr>
+<tr><td>Dynamics</td><td>The Dynamics palette</td></tr>
+<tr><td>Sticking (R/L)</td><td><code>R</code> and <code>L</code> in the Drum techniques palette, or type it with <code>Ctrl+Shift+K</code> (<code>Space</code> moves to the next note)</td></tr>
+<tr><td>Automatic sticking</td><td>Select the notes, then <code>Tools → Sticking: R L R L</code> (or <code>L R L R</code> to start with the left hand). Notes for the feet are passed over.</td></tr>
+<tr><td>Counting</td><td>Select the notes, then <code>Tools → Counting: 1 e &amp; a</code>. The beat gets its number, the half beat <code>&amp;</code>, sixteenth notes <code>e</code> and <code>a</code>, triplets <code>&amp;</code> and <code>a</code>. In 6/8, 9/8 and 12/8 every eighth note gets a number (1 to 6 in 6/8) and the sixteenth notes between them <code>&amp;</code>. A pickup measure is counted towards its barline. The count is lyrics, so a double-click lets you change it.</td></tr>
+<tr><td>Section names (Intro, Verse, Chorus…) and instructions such as Fill and Break</td><td>The Chart marks palette. Double-click one in the score to change its text.</td></tr>
+<tr><td>Repeats, voltas, D.S., Coda</td><td>The Repeats &amp; jumps palette</td></tr>
+<tr><td>Tuplets</td><td>The tuplet button in the toolbar (<code>Ctrl+3</code> for a triplet)</td></tr>
+</tbody></table>
+<h2 id="s14">Playback</h2>
+<p><code>Space</code> starts and stops playback. Rewind, loop and metronome are on the rail; the rest, such as count-in, is in the command search (<code>Ctrl+K</code>). A click on the position and tempo of the rail steps the playback speed through 100, 75 and 50%.</p>
+<p>For a swing feel, choose <code>Swung eighth notes</code> or <code>Swung sixteenth notes</code> in <code>Tools → Swing</code>. The notation stays as it is; only playback and exported audio change, and <code>Straight (no swing)</code> turns it off again.</p>
+<h2 id="s15">Saving and exporting</h2>
+<ul>
+<li><code>Ctrl+S</code> saves a <code>.kitnote</code> file. The save dialog can also write a <strong>MuseScore file (*.mscz)</strong>.
+</li>
+<li>A <code>.kitnote</code> file has the same content as an <code>.mscz</code> file. Rename it to <code>.mscz</code> and MuseScore Studio opens it.
+</li>
+<li>When exporting audio, <strong>Include the metronome click</strong> makes a practice track with the click in it.
+</li>
+<li><code>File → Export</code> writes PDF, PNG, SVG, MP3, WAV, OGG, FLAC, AAC, MIDI and MusicXML.
+</li>
+</ul>
+<h3>Changing the selection</h3>
+<p><code>Tools → Change the selection</code> gathers what an arranger does all the time. Select measures or notes, then choose:</p>
+<ul>
+<li><code>Hi-hat to ride</code> / <code>Ride to hi-hat</code>: moves the cymbal part of a groove (to the ride for a chorus, say).
+</li>
+<li><code>Swap the sticking (R and L)</code>: exchanges R and L in the sticking.
+</li>
+<li><code>Accents on the beats</code> / <code>Accents off the beats</code>: accents the hand strokes that fall on a beat, or halfway between two (for accent studies).
+</li>
+<li><code>Remove the accents</code>: takes the accents of the selection away.
+</li>
+</ul>
+<h3>Copying as a drum tab (text)</h3>
+<p><code>Tools → Copy as drum tab (text)</code> puts the selected measures (the whole score when nothing is selected) on the clipboard as a text drum tab, to paste into a message or a text file (it lines up in a font with characters of equal width).</p>
+<pre>HH|x-x-x-x-x-x-x-x-|
+SD|----o-------o---|
+BD|o-------o-------|</pre>
+<p><code>x</code> is a cymbal, <code>o</code> a drum (on the hi-hat line: the open hi-hat), a capital an accent, <code>g</code> a ghost note. To save it as a file, choose <code>Drum tab (text)</code> in <code>File → Export</code>. A measure with triplets gets 12 or 24 columns.</p>
+<h3>Pasting a drum tab (text)</h3>
+<p>The other way round: copy a text drum tab from the web or from your notes, then choose <code>Tools → Paste drum tab (text)</code>. It is written into the score from the selected measure on (from the first measure when nothing is selected); measures are added when the score is shorter than the tab.</p>
+<ul>
+<li>The drum of a line is read from the letters it begins with: <code>HH</code>/<code>H</code> (hi-hat), <code>SD</code>/<code>S</code>/<code>SN</code> (snare), <code>BD</code>/<code>B</code>/<code>K</code> (bass drum), <code>CC</code>/<code>C</code>/<code>CR</code> (crash), <code>RD</code>/<code>R</code> (ride), <code>T1</code>/<code>HT</code>, <code>T2</code>/<code>MT</code>, <code>FT</code>/<code>LT</code>/<code>F</code> (toms), <code>HF</code> (pedal hi-hat).
+</li>
+<li>A capital is an accent and <code>g</code> a ghost note. On the hi-hat line an <code>o</code> is the open hi-hat, on the snare line an <code>x</code> the cross-stick.
+</li>
+<li>Other lines, such as counting or lyrics, are passed over.
+</li>
+<li>Lines with twelve columns to the measure (in 4/4) are read as triplets.
+</li>
+<li>A measure of another length than the measure of the score, or with notes between its steps, cannot be written; you are told how many were left out.
+</li>
+</ul>
+<h2 id="s16">Drum scores with AI</h2>
+<p>KitNote comes with an <strong>MCP server</strong> and a <strong>skill</strong> for AI tools such as Claude Code and Codex: the AI can create drum scores, write them as drum tabs, change, read and export them to PDF, MIDI, MusicXML or MP3.</p>
+<ol>
+<li>Open <code>Edit → Preferences → AI</code>.
+</li>
+<li>Click <code>Set up</code> next to your tool (Claude Code, Codex, Claude Desktop, Cursor, Gemini CLI). KitNote is added to the tool's settings (the settings file is copied to <code>.kitnote-backup</code> first), and the skill to the tools that have skills.
+</li>
+<li>Restart the tool and ask, for example: "A drum score for a 32-measure rock song at 120 BPM in 4/4: 4 measures of intro, 8 of verse, the chorus on the ride, a fill at the end of every section - and a PDF."
+</li>
+<li>The files (<code>.kitnote</code>, PDF ...) are written where you said; open them in KitNote to play and edit.
+</li>
+</ol>
+<p>Scores that exist can be changed too: "In Documents/KitNote/song.kitnote put measures 9-16 on the ride and a tom fill in the last measure." And recordings: "Make a drum score from C:/Music/song.mp3." If the audio engine is not there yet, the AI first asks in the chat - saying what it downloads, about 1 GB - and installs it only when you agree.</p>
+<p>In Claude Code, KitNote's ready requests are there as commands: <code>/mcp__kitnote__drum_chart</code>, <code>/mcp__kitnote__groove_exercise</code>, <code>/mcp__kitnote__transcribe_song</code>, <code>/mcp__kitnote__change_score</code>.</p>
+<p>Other MCP tools take <code>kitnote-mcp.exe</code> (in the folder of KitNote.exe) as a stdio server. <code>Remove</code> takes KitNote out of a tool again.</p>
+<h2 id="s17">Drum score from a recording</h2>
+<p><code>File → Drum score from a recording…</code> (or the <code>From a recording</code> card on Home) separates the drums of a song from the other instruments (Demucs), finds their strokes and sorts them - bass drum, snare, toms, closed and open hi-hat, crash - finds the beat and writes a score - on sixteenth notes, or on triplets in measures played that way (a shuffle). It is saved next to the recording as <code>.kitnote</code> and opened. A recording (wav, mp3, flac, ogg, m4a…) can also be dropped on the KitNote window, or on the recording box of the dialog.</p>
+<ul>
+<li>The first time, it needs the audio engine (about 1 GB: Python, PyTorch, the separation model). It is installed into <code>%LOCALAPPDATA%\KitNote\ai</code> only after you agree in a dialog that says what is downloaded from where (or, when you give a recording to an AI tool such as Claude Code, after you agree in the chat), and <code>Preferences → AI</code> removes it.
+</li>
+<li><code>Separate more accurately</code> uses the better separation model (htdemucs_ft): about four times slower, and about 320 MB more to download the first time.
+</li>
+<li><code>Mark the sections where the groove changes</code> (on by default) puts A, B, C ... where the groove changes and stays changed, the same letter when a groove comes back - rename them (Verse, Chorus) after listening. <code>Write measures that repeat the one before as % signs</code> makes the chart shorter to read.
+</li>
+<li>Choose the time signature of the song. The default, <code>Automatic</code>, finds 4/4, 3/4, 6/8 or 12/8 from the measures the beat model hears and from how the strokes divide the beat: in 6/8 and 12/8 every eighth note is played (a hi-hat or ride on all three of each beat), while a shuffle leaves out the middle one and stays 4/4, with triplets. Or choose 4/4, 3/4, 2/4, 6/8 or 12/8; in 6/8 and 12/8 a beat is a dotted quarter, and the tempo is written so (<code>♩. = 60</code>) - the tempo field of the dialog then shows <code>♩.</code> too.
+</li>
+<li>For a recording of drums alone, tick <code>The recording is of drums alone</code> to skip the separation. A known tempo (of the beat) makes the result better. The hum of the mains (50 or 60 Hz, a cable not grounded) is taken out before the strokes are looked for, so that it is not written as a floor tom.
+</li>
+<li>Engine 2 uses two models trained on real music: Beat This! (JKU Linz, MIT licence) finds the beats and measures, KitNote's own drum model (trained by KitNote on openly licensed data: real drummers' performances and grooves of many styles played on 51 sampled kits) the drum strokes; KitNote tells open or closed hi-hat, crash or ride, which tom and ghost notes from the separated drums. An engine installed before shows <code>Update the audio engine…</code> in <code>Preferences → AI</code> (about 150 MB).
+</li>
+<li>An automatic transcription is a starting point. Against a published chart of a real song, engine 2 had about 99% of the bass drum, 95% of the snare and 96% of the time kept on hi-hat and cymbals right, and 99% of the hi-hats open or closed as in the chart; tempo, measures and bar lines were the same. Hi-hat and cymbal (crash, ride) are decided per measure, so playing that changes from beat to beat is written more simply. Toms are often missed, above all in a song with other instruments. Correct it with the step grid.
+</li>
+<li>Weak snare strokes (ghost notes) are left out unless you tick <code>Also write ghost notes</code>: charts usually leave them out, and many are the noise of other drums.
+</li>
+<li>The score plays the song along with it, so that you can check it by ear (next section).
+</li>
+</ul>
+<h2 id="s18">Playing along with the recording</h2>
+<p>A score made from a recording plays that recording with it, in time: the Mixer (<code>View → Mixer</code>) has a <code>Recording</code> channel next to the drums. Its fader sets the balance; <code>S</code> (solo) plays the recording alone, <code>M</code> (mute) leaves the drums alone. Play, stop, a click in the score, loops and the count-in move the recording with the score.</p>
+<ul>
+<li><code>File → Play along with a recording…</code> attaches a recording (wav, flac, mp3, ogg) to any score, changes it or takes it away. KitNote finds where measure 1 begins in it by matching the notes with the strokes it hears; check by ear, and move <code>Measure 1 begins at … in the recording</code> a few hundredths of a second if need be (<code>Play</code> in the same dialog). The score keeps the file (next to the score: by its name) and this time in its properties.
+</li>
+<li>The recording is heard at 100% speed only: it is not stretched. At 75% or 50% its channel says <code>Only at 100%</code> and is silent.
+</li>
+<li>Exported audio leaves the recording out; tick <code>Include the recording</code> in the export dialog to mix it in. At a speed other than 100% the recording is left out of the export as well, and the dialog says so.
+</li>
+<li>A recording that was not found (moved, or on a drive that is not plugged in) is looked for again when you play, open the Mixer or <code>File → Play along with a recording…</code>: put back, it plays without the score being opened again.
+</li>
+<li>A song is never played at one exact tempo, so a score made from a recording follows the recording's own timing: hidden tempo changes (<code>View → Show → Show invisible</code> shows them in grey) keep every measure within about a hundredth of a second of where it is in the recording, and measure 1 begins where the beat model found the first downbeat. The chart still shows one tempo mark, rounded (<code>♩ = 94</code>), and a mark of its own only where the song clearly changes its tempo for at least four measures (a slower bridge, a ritardando at the end).
+</li>
+<li>Changing the first tempo mark (its text, Properties, tap tempo) scales the hidden changes and the later marks with it, in one step of the undo history: the song's feel at the new speed - the recording, never stretched, then no longer lines up (undo, or set the tempo back). Taking the recording away asks whether the score keeps its timing (it still plays like the song) or plays at its tempo marks alone.
+</li>
+<li>A recording attached by hand keeps its own time: where the song drifts away from the tempo of the score, the two drift apart.
+</li>
+</ul>
+<h2 id="s19">Files KitNote opens</h2>
+<p><code>.kitnote</code>, <code>.mscz</code>, <code>.mscx</code>, MusicXML and MIDI files. <strong>A file that contains any instrument other than unpitched percussion is not opened.</strong></p>
+<h2 id="s20">Other shortcuts</h2>
+<table><thead><tr><th>Action</th><th>Key</th></tr></thead><tbody>
+<tr><td>Undo / redo</td><td><code>Ctrl+Z</code> / <code>Ctrl+Y</code></td></tr>
+<tr><td>Repeat the selection</td><td><code>R</code></td></tr>
+<tr><td>Add one measure at the end</td><td><code>Ctrl+B</code></td></tr>
+<tr><td>Insert one measure before the selection</td><td><code>Ins</code></td></tr>
+<tr><td>Delete the selected measures</td><td><code>Ctrl+Del</code></td></tr>
+<tr><td>Show or hide the percussion panel</td><td><code>O</code></td></tr>
+<tr><td>Zoom in / out</td><td><code>Ctrl++</code> / <code>Ctrl+-</code></td></tr>
+<tr><td>Command search</td><td><code>Ctrl+K</code></td></tr>
+</tbody></table>
+<p>Shortcuts can be changed in <code>Edit → Preferences → Shortcuts</code>.</p>
+<footer>KitNote is based on MuseScore Studio and is distributed under the GNU General Public License version 3.</footer>
+</main>
+</body>
+</html>

@@ -1,0 +1,167 @@
+@echo off
+ECHO "KitNote package"
+
+SET ARTIFACTS_DIR=build.artifacts
+
+SET BUILD_MODE=""
+SET TARGET_PROCESSOR_BITS=64
+SET TARGET_PROCESSOR_ARCH=x86_64
+SET BUILD_DIR=build.release
+SET INSTALL_DIR=build.install
+SET UPGRADE_UUID="11111111-1111-1111-1111-111111111111"
+
+:GETOPTS
+IF /I "%1" == "-m" SET BUILD_MODE=%2& SHIFT
+IF /I "%1" == "-b" SET TARGET_PROCESSOR_BITS=%2& SHIFT
+IF /I "%1" == "--guid" SET UPGRADE_UUID=%2& SHIFT
+SHIFT
+IF NOT "%1" == "" GOTO GETOPTS
+
+: Try get from env
+IF %BUILD_MODE% == "" ( SET /p BUILD_MODE=<%ARTIFACTS_DIR%\env\build_mode.env)
+
+: Check args
+IF %BUILD_MODE% == "" ( ECHO "error: not set BUILD_MODE" & GOTO END_ERROR)
+IF NOT %TARGET_PROCESSOR_BITS% == 64 (
+    IF NOT %TARGET_PROCESSOR_BITS% == 32 (
+        ECHO "error: not set TARGET_PROCESSOR_BITS, must be 32 or 64, current TARGET_PROCESSOR_BITS: %TARGET_PROCESSOR_BITS%"
+        GOTO END_ERROR
+    )
+)
+
+IF %TARGET_PROCESSOR_BITS% == 32 ( 
+    SET TARGET_PROCESSOR_ARCH=x86
+    SET BUILD_DIR=msvc.build_x86
+    SET INSTALL_DIR=msvc.install_x86
+)  
+
+:: Setup package type
+IF %BUILD_MODE% == devel   ( SET PACKAGE_TYPE="7z") ELSE (
+IF %BUILD_MODE% == nightly ( SET PACKAGE_TYPE="7z") ELSE (
+IF %BUILD_MODE% == testing ( SET PACKAGE_TYPE="msi") ELSE (    
+IF %BUILD_MODE% == stable  ( SET PACKAGE_TYPE="msi") ELSE ( 
+    ECHO "Unknown BUILD_MODE: %BUILD_MODE%"
+    GOTO END_ERROR
+))))
+
+SET /p BUILD_VERSION=<%ARTIFACTS_DIR%\env\build_version.env
+SET /p BUILD_NUMBER=<%ARTIFACTS_DIR%\env\build_number.env
+SET /p BUILD_BRANCH=<%ARTIFACTS_DIR%\env\build_branch.env
+SET /p BUILD_REVISION=<%ARTIFACTS_DIR%\env\build_revision.env
+
+ECHO "BUILD_MODE: %BUILD_MODE%"
+ECHO "BUILD_NUMBER: %BUILD_NUMBER%"
+ECHO "BUILD_BRANCH: %BUILD_BRANCH%"
+ECHO "BUILD_REVISION: %BUILD_REVISION%"
+ECHO "BUILD_VERSION: %BUILD_VERSION%"
+ECHO "TARGET_PROCESSOR_BITS: %TARGET_PROCESSOR_BITS%"
+ECHO "TARGET_PROCESSOR_ARCH: %TARGET_PROCESSOR_ARCH%"
+ECHO "BUILD_DIR: %BUILD_DIR%"
+ECHO "INSTALL_DIR: %INSTALL_DIR%"
+ECHO "PACKAGE_TYPE: %PACKAGE_TYPE%"
+
+IF %PACKAGE_TYPE% == "7z" (GOTO PACK_7z) ELSE (
+IF %PACKAGE_TYPE% == "msi" (GOTO PACK_MSI) ELSE (
+IF %PACKAGE_TYPE% == "dir" (GOTO PACK_DIR) ELSE (    
+    ECHO "Unknown package type: %PACKAGE_TYPE%"
+    GOTO END_ERROR
+)))
+
+:: ============================
+:: PACK_7z
+:: ============================
+:PACK_7z
+ECHO "Start 7z packing..."
+IF %BUILD_MODE% == nightly ( 
+    SET ARTIFACT_NAME=KitNote-Nightly-%BUILD_NUMBER%-%BUILD_BRANCH%-%BUILD_REVISION%-%TARGET_PROCESSOR_ARCH%
+) ELSE (
+    SET ARTIFACT_NAME=KitNote-%BUILD_VERSION%-%TARGET_PROCESSOR_ARCH%
+)
+
+RENAME %INSTALL_DIR% %ARTIFACT_NAME%
+7z a %ARTIFACTS_DIR%\%ARTIFACT_NAME%.7z %ARTIFACT_NAME%
+
+bash ./buildscripts/ci/tools/make_artifact_name_env.sh %ARTIFACT_NAME%.7z
+ECHO "Finished 7z packing"
+GOTO END_SUCCESS
+
+:: ============================
+:: PACK_DIR
+:: ============================
+:PACK_DIR
+ECHO "Start dir packing..."
+MKDIR %ARTIFACTS_DIR%\KitNote
+XCOPY %INSTALL_DIR% %ARTIFACTS_DIR%\KitNote /E /S /Y
+ECHO "Finished dir packing"
+GOTO END_SUCCESS
+
+:: ============================
+:: PACK_MSI
+:: ============================
+:PACK_MSI
+ECHO "Start msi packing..."
+
+:: generate unique GUID
+SET UUIDGEN="C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\uuidgen.exe"
+%UUIDGEN% > uuid.txt
+SET /p PACKAGE_UUID=<uuid.txt
+ECHO on
+ECHO "PACKAGE_UUID: %PACKAGE_UUID%"
+ECHO off
+
+cd "%BUILD_DIR%" 
+cmake -DCPACK_WIX_PRODUCT_GUID=%PACKAGE_UUID% ^
+    -DCPACK_WIX_UPGRADE_GUID=%UPGRADE_UUID% ^
+    ..
+
+SET PATH=%WIX%;%PATH% 
+cmake --build . --target package || SET WIX_ERROR=1
+cd ..
+
+ECHO "Create logs dir"
+MKDIR %ARTIFACTS_DIR%\logs
+MKDIR %ARTIFACTS_DIR%\logs\WIX
+
+SET WIX_LOG_DIR=win64
+IF %TARGET_PROCESSOR_BITS% == 32 ( SET WIX_LOG_DIR=win32 ) 
+
+SET WIX_LOGS_PATH="%BUILD_DIR%\_CPack_Packages\%WIX_LOG_DIR%\WIX"
+ECHO "Copy from %WIX_LOGS_PATH% to %ARTIFACTS_DIR%\logs\WIX"
+
+ECHO .msi > excludedmsi.txt
+XCOPY /Y /EXCLUDE:excludedmsi.txt %WIX_LOGS_PATH% %ARTIFACTS_DIR%\logs\WIX
+
+IF DEFINED WIX_ERROR (
+    GOTO END_ERROR
+)
+
+:: find the MSI file without the hardcoded version
+for /r %%i in (%BUILD_DIR%\*.msi) do (
+    SET "FILEPATH=%%i"d
+)
+
+IF %BUILD_MODE% == nightly ( 
+    SET ARTIFACT_NAME=KitNote-Nightly-%BUILD_NUMBER%-%BUILD_BRANCH%-%BUILD_REVISION%-%TARGET_PROCESSOR_ARCH%.msi
+) ELSE (
+    SET ARTIFACT_NAME=KitNote-%BUILD_VERSION%-%TARGET_PROCESSOR_ARCH%.msi
+)
+
+ECHO "Copy from %FILEPATH% to %ARTIFACT_NAME%"
+
+COPY %FILEPATH% %ARTIFACTS_DIR%\%ARTIFACT_NAME% /Y || GOTO END_ERROR
+SET ARTIFACT_PATH=%ARTIFACTS_DIR%\%ARTIFACT_NAME%
+
+bash ./buildscripts/ci/tools/make_artifact_name_env.sh %ARTIFACT_NAME%
+
+GOTO END_SUCCESS
+
+
+:: ============================
+:: END
+:: ============================
+
+:END_SUCCESS
+exit /b 0
+
+:END_ERROR
+exit /b 1

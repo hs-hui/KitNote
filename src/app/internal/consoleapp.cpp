@@ -1,0 +1,541 @@
+/*
+ * SPDX-License-Identifier: GPL-3.0-only
+ *
+ * KitNote
+ * Drum notation, built on MuseScore Studio
+ *
+ * Copyright (C) 2021 MuseScore Limited and others
+ * Modified for KitNote, 2026
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 3 as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+#include "consoleapp.h"
+
+#include <QApplication>
+#ifndef Q_OS_WASM
+#include <QThreadPool>
+#endif
+
+#include "modularity/ioc.h"
+#include "async/processevents.h"
+
+#include "kfw_framework_config.h"
+#include "app_config.h"
+
+#include "log.h"
+#include "settings.h"
+
+using namespace kfw;
+using namespace kn::app;
+using namespace kn::converter;
+
+static std::optional<ConvertTarget> parseTarget(const QMap<CmdOptions::ParamKey, QVariant>& params)
+{
+    auto it = params.find(CmdOptions::ParamKey::ScoreRegion);
+    if (it != params.end()) {
+        return it.value().toString().toStdString();
+    }
+
+    it = params.find(CmdOptions::ParamKey::PageNumber);
+    if (it == params.end()) {
+        return std::nullopt;
+    }
+
+    bool ok = true;
+    page_num_t num = it.value().toULongLong(&ok) - 1;
+
+    if (!ok) {
+        LOGE() << "Invalid page, ignoring...";
+        return std::nullopt;
+    }
+
+    return num;
+}
+
+ConsoleApp::ConsoleApp(const CmdOptions& options, const modularity::ContextPtr& ctx)
+    : kfw::BaseApplication(ctx), m_options(options)
+{
+}
+
+void ConsoleApp::addModule(modularity::IModuleSetup* module)
+{
+    m_modules.push_back(module);
+}
+
+void ConsoleApp::setup()
+{
+    const CmdOptions& options = m_options;
+
+    IApplication::RunMode runMode = options.runMode;
+    setRunMode(runMode);
+
+    // ====================================================
+    // Setup modules: Resources, Exports, Imports, UiTypes
+    // ====================================================
+    m_globalModule.setApplication(shared_from_this());
+    m_globalModule.registerResources();
+    m_globalModule.registerExports();
+
+    for (modularity::IModuleSetup* m : m_modules) {
+        m->setApplication(shared_from_this());
+        m->registerResources();
+    }
+
+    for (modularity::IModuleSetup* m : m_modules) {
+        m->registerExports();
+    }
+
+#ifndef KFW_MULTICONTEXT_WIP
+    modularity::ContextPtr ctx = std::make_shared<modularity::Context>();
+    ctx->id = 0;
+    std::vector<kfw::modularity::IContextSetup*>& csetups = contextSetups(ctx);
+    for (modularity::IContextSetup* s : csetups) {
+        s->registerExports();
+    }
+#endif
+
+    m_globalModule.resolveImports();
+    for (modularity::IModuleSetup* m : m_modules) {
+        m->resolveImports();
+    }
+
+#ifndef KFW_MULTICONTEXT_WIP
+    for (modularity::IContextSetup* s : csetups) {
+        s->resolveImports();
+    }
+#endif
+
+    // ====================================================
+    // Setup modules: apply the command line options
+    // ====================================================
+    applyCommandLineOptions(options, runMode);
+
+    // ====================================================
+    // Setup modules: onPreInit
+    // ====================================================
+    m_globalModule.onPreInit(runMode);
+    for (modularity::IModuleSetup* m : m_modules) {
+        m->onPreInit(runMode);
+    }
+
+#ifndef KFW_MULTICONTEXT_WIP
+    for (modularity::IContextSetup* s : csetups) {
+        s->onPreInit(runMode);
+    }
+#endif
+    // ====================================================
+    // Setup modules: onInit
+    // ====================================================
+    m_globalModule.onInit(runMode);
+    for (modularity::IModuleSetup* m : m_modules) {
+        m->onInit(runMode);
+    }
+
+#ifndef KFW_MULTICONTEXT_WIP
+    for (modularity::IContextSetup* s : csetups) {
+        s->onInit(runMode);
+    }
+#endif
+    // ====================================================
+    // Setup modules: onAllInited
+    // ====================================================
+    m_globalModule.onAllInited(runMode);
+    for (modularity::IModuleSetup* m : m_modules) {
+        m->onAllInited(runMode);
+    }
+
+#ifndef KFW_MULTICONTEXT_WIP
+    for (modularity::IContextSetup* s : csetups) {
+        s->onAllInited(runMode);
+    }
+#endif
+
+    // ====================================================
+    // Setup modules: onStartApp (on next event loop)
+    // ====================================================
+    QMetaObject::invokeMethod(qApp, [this]() {
+        m_globalModule.onStartApp();
+        for (modularity::IModuleSetup* m : m_modules) {
+            m->onStartApp();
+        }
+    }, Qt::QueuedConnection);
+
+    // ====================================================
+    // Run
+    // ====================================================
+
+    switch (runMode) {
+    case IApplication::RunMode::ConsoleApp: {
+        // ====================================================
+        // Process Diagnostic
+        // ====================================================
+        CmdOptions::Diagnostic diagnostic = options.diagnostic;
+        if (diagnostic.type != DiagnosticType::Undefined) {
+            QMetaObject::invokeMethod(qApp, [this, diagnostic]() {
+                    int code = processDiagnostic(diagnostic);
+                    qApp->exit(code);
+                }, Qt::QueuedConnection);
+        } else {
+            // ====================================================
+            // Process Converter
+            // ====================================================
+            CmdOptions::ConverterTask task = options.converterTask;
+            QMetaObject::invokeMethod(qApp, [this, task]() {
+                    int code = processConverter(task);
+                    qApp->exit(code);
+                }, Qt::QueuedConnection);
+        }
+    } break;
+    case IApplication::RunMode::AudioPluginRegistration: {
+        CmdOptions::AudioPluginRegistration pluginRegistration = options.audioPluginRegistration;
+
+        QMetaObject::invokeMethod(qApp, [this, pluginRegistration]() {
+                int code = processAudioPluginRegistration(pluginRegistration);
+                qApp->exit(code);
+            }, Qt::QueuedConnection);
+    } break;
+    default: {
+        UNREACHABLE;
+    }
+    }
+}
+
+int ConsoleApp::contextCount() const
+{
+    return m_context ? 1 : 0;
+}
+
+std::vector<kfw::modularity::ContextPtr> ConsoleApp::contexts() const
+{
+    return { m_context };
+}
+
+std::vector<kfw::modularity::IContextSetup*>& ConsoleApp::contextSetups(
+    const kfw::modularity::ContextPtr& ctx)
+{
+    for (Context& c : m_contexts) {
+        if (c.ctx->id == ctx->id) {
+            return c.setups;
+        }
+    }
+
+    m_contexts.emplace_back();
+
+    Context& ref = m_contexts.back();
+    ref.ctx = ctx;
+
+    modularity::IContextSetup* global = m_globalModule.newContext(ctx);
+    if (global) {
+        ref.setups.push_back(global);
+    }
+
+    for (modularity::IModuleSetup* m : m_modules) {
+        modularity::IContextSetup* s = m->newContext(ctx);
+        if (s) {
+            ref.setups.push_back(s);
+        }
+    }
+
+    return ref.setups;
+}
+
+kfw::modularity::ContextPtr ConsoleApp::setupNewContext()
+{
+    //! NOTE
+    //! We're currently in a transitional state from a single global context to multiple contexts.
+    //! Therefore, this code will be improved; not everything is yet complete,
+    //! for example, there's no way to delete (close) a specific context.
+    //! Probably the context initialization needs to be moved to the base class of the app.
+
+    m_context = std::make_shared<modularity::Context>();
+    auto& ctx = m_context;
+    // only global
+    ctx->id = 0;
+
+    const CmdOptions& options = m_options;
+    IApplication::RunMode runMode = options.runMode;
+    if (runMode == IApplication::RunMode::AudioPluginRegistration) {
+        return nullptr;
+    }
+
+    IF_ASSERT_FAILED(runMode == IApplication::RunMode::ConsoleApp) {
+        return nullptr;
+    }
+
+    LOGI() << "New context created with id: " << ctx->id;
+
+    // Setup
+#ifdef KFW_MULTICONTEXT_WIP
+    std::vector<kfw::modularity::IContextSetup*>& csetups = contextSetups(ctx);
+
+    for (modularity::IContextSetup* s : contexts) {
+        s->registerExports();
+    }
+
+    for (modularity::IContextSetup* s : contexts) {
+        s->resolveImports();
+    }
+
+    for (modularity::IContextSetup* s : contexts) {
+        s->onPreInit(runMode);
+    }
+
+    for (modularity::IContextSetup* s : contexts) {
+        s->onInit(runMode);
+    }
+
+    for (modularity::IContextSetup* s : contexts) {
+        s->onAllInited(runMode);
+    }
+
+#endif
+
+    return ctx;
+}
+
+void ConsoleApp::finish()
+{
+    PROFILER_PRINT;
+
+// Wait Thread Poll
+#ifndef Q_OS_WASM
+    QThreadPool* globalThreadPool = QThreadPool::globalInstance();
+    if (globalThreadPool) {
+        LOGI() << "activeThreadCount: " << globalThreadPool->activeThreadCount();
+        globalThreadPool->waitForDone();
+    }
+#endif
+
+    // Deinit
+    async::processMessages();
+
+    for (modularity::IModuleSetup* m : m_modules) {
+        m->onDeinit();
+    }
+
+    m_globalModule.onDeinit();
+
+    for (modularity::IModuleSetup* m : m_modules) {
+        m->onDestroy();
+    }
+
+    m_globalModule.onDestroy();
+
+    // Delete contexts
+    for (auto& c : m_contexts) {
+        qDeleteAll(c.setups);
+    }
+
+    // Delete modules
+    qDeleteAll(m_modules);
+    m_modules.clear();
+
+    removeIoC();
+}
+
+void ConsoleApp::applyCommandLineOptions(const CmdOptions& options, IApplication::RunMode runMode)
+{
+    if (options.app.loggerLevel) {
+        m_globalModule.setLoggerLevel(options.app.loggerLevel.value());
+    }
+
+    if (runMode == IApplication::RunMode::AudioPluginRegistration) {
+        return;
+    }
+
+    uiConfiguration()->setPhysicalDotsPerInch(options.ui.physicalDotsPerInch);
+
+    notationConfiguration()->setTemplateModeEnabled(options.notation.templateModeEnabled);
+    notationConfiguration()->setTestModeEnabled(options.notation.testModeEnabled);
+
+    if (runMode == IApplication::RunMode::ConsoleApp) {
+        project::MigrationOptions migration;
+        migration.appVersion = kn::engraving::Constants::MSC_VERSION;
+
+        //! NOTE Don't ask about migration in convert mode
+        migration.isAskAgain = false;
+
+        if (options.project.fullMigration) {
+            bool isMigration = options.project.fullMigration.value();
+            migration.isApplyMigration = isMigration;
+            migration.isApplyEdwin = isMigration;
+            migration.isApplyLeland = isMigration;
+            migration.isRemapPercussion = isMigration;
+        }
+
+        //! NOTE Don't write to settings, just on current session
+        for (project::MigrationType type : project::allMigrationTypes()) {
+            projectConfiguration()->setMigrationOptions(type, migration, false);
+        }
+    }
+
+#ifdef KITNOTE_BUILD_IMPEXP_IMAGESEXPORT_MODULE
+    imagesExportConfiguration()->setTrimMarginPixelSize(options.exportImage.trimMarginPixelSize);
+    imagesExportConfiguration()->setExportPngDpiResolutionOverride(options.exportImage.pngDpiResolution);
+#endif
+
+#ifdef KITNOTE_BUILD_IMPEXP_MIDI_MODULE
+    midiImportExportConfiguration()->setMidiImportOperationsFile(options.importMidi.operationsFile);
+#endif
+#ifdef KITNOTE_BUILD_IMPEXP_MUSICXML_MODULE
+    musicXmlConfiguration()->setNeedUseDefaultFontOverride(options.importMusicXml.useDefaultFont);
+    musicXmlConfiguration()->setInferTextTypeOverride(options.importMusicXml.inferTextType);
+#endif
+#ifdef KITNOTE_BUILD_IMPEXP_AUDIOEXPORT_MODULE
+    audioExportConfiguration()->setExportMp3BitrateOverride(options.exportAudio.mp3Bitrate);
+#endif
+#ifdef KITNOTE_BUILD_IMPEXP_GUITARPRO_MODULE
+    guitarProConfiguration()->setLinkedTabStaffCreated(options.guitarPro.linkedTabStaffCreated);
+    guitarProConfiguration()->setExperimental(options.guitarPro.experimental);
+#endif
+    if (options.app.revertToFactorySettings) {
+        settings()->reset(options.app.revertToFactorySettings.value());
+    }
+}
+
+int ConsoleApp::processConverter(const CmdOptions::ConverterTask& task)
+{
+    Ret ret = make_ret(Ret::Code::Ok);
+    String soundProfile = task.params[CmdOptions::ParamKey::SoundProfile].toString();
+
+    if (!soundProfile.isEmpty() && !soundProfilesRepository()->containsProfile(soundProfile)) {
+        LOGE() << "Unknown sound profile: " << soundProfile;
+        soundProfile.clear();
+    }
+
+    converter::OpenParams openParams;
+    openParams.stylePath = task.params[CmdOptions::ParamKey::StylePath].toString();
+    openParams.forceMode = task.params[CmdOptions::ParamKey::ForceMode].toBool();
+    openParams.unrollRepeats = task.params[CmdOptions::ParamKey::UnrollRepeats].toBool();
+
+    switch (task.type) {
+    case ConvertType::Batch:
+        ret = converter()->batchConvert(task.inputFile, openParams, soundProfile);
+        break;
+    case ConvertType::File: {
+        std::string transposeOptionsJson = task.params[CmdOptions::ParamKey::ScoreTransposeOptions].toString().toStdString();
+        std::optional<ConvertTarget> target = parseTarget(task.params);
+        io::path_t tracksDiffPath = task.params[CmdOptions::ParamKey::TracksDiffPath].toString();
+        ret = converter()->fileConvert(task.inputFile, task.outputFile, openParams, soundProfile, tracksDiffPath,
+                                       transposeOptionsJson, target);
+    } break;
+    case ConvertType::ConvertScoreParts:
+        ret = converter()->convertScoreParts(task.inputFile, task.outputFile, openParams);
+        break;
+    case ConvertType::ExportScoreMedia: {
+        kfw::io::path_t highlightConfigPath = task.params[CmdOptions::ParamKey::HighlightConfigPath].toString();
+        ret = converter()->exportScoreMedia(task.inputFile, task.outputFile, openParams, highlightConfigPath);
+    } break;
+    case ConvertType::ExportScoreMeta:
+        ret = converter()->exportScoreMeta(task.inputFile, task.outputFile, openParams);
+        break;
+    case ConvertType::ExportScoreParts:
+        ret = converter()->exportScoreParts(task.inputFile, task.outputFile, openParams);
+        break;
+    case ConvertType::ExportScorePartsPdf:
+        ret = converter()->exportScorePartsPdfs(task.inputFile, task.outputFile, openParams);
+        break;
+    case ConvertType::ExportScoreTranspose: {
+        std::string scoreTranspose = task.params[CmdOptions::ParamKey::ScoreTransposeOptions].toString().toStdString();
+        ret = converter()->exportScoreTranspose(task.inputFile, task.outputFile, scoreTranspose, openParams);
+    } break;
+    case ConvertType::ExportScoreElements: {
+        ret = converter()->exportScoreElements(task.inputFile, task.outputFile, openParams);
+    } break;
+    case ConvertType::SourceUpdate: {
+        std::string scoreSource = task.params[CmdOptions::ParamKey::ScoreSource].toString().toStdString();
+        ret = converter()->updateSource(task.inputFile, scoreSource, openParams.forceMode);
+    } break;
+    }
+
+    if (!ret) {
+        LOGE() << "failed convert, error: " << ret.toString();
+    }
+
+    return ret.code();
+}
+
+int ConsoleApp::processDiagnostic(const CmdOptions::Diagnostic& task)
+{
+    if (!diagnosticDrawProvider()) {
+        return make_ret(Ret::Code::NotSupported);
+    }
+
+    Ret ret = make_ret(Ret::Code::Ok);
+
+    if (task.input.isEmpty()) {
+        return make_ret(Ret::Code::UnknownError);
+    }
+
+    io::paths_t input;
+    for (const QString& p : task.input) {
+        input.push_back(p);
+    }
+
+    kfw::io::path_t output = task.output;
+
+    if (output.empty()) {
+        output = "./";
+    }
+
+    switch (task.type) {
+    case DiagnosticType::GenDrawData:
+        ret = diagnosticDrawProvider()->generateDrawData(input.front(), output);
+        break;
+    case DiagnosticType::ComDrawData: {
+        IF_ASSERT_FAILED(input.size() == 2) {
+            return make_ret(Ret::Code::UnknownError);
+        }
+        ret = diagnosticDrawProvider()->compareDrawData(input.at(0), input.at(1), output);
+    } break;
+    case DiagnosticType::DrawDataToPng:
+        ret = diagnosticDrawProvider()->drawDataToPng(input.front(), output);
+        break;
+    case DiagnosticType::DrawDiffToPng: {
+        kfw::io::path_t diffPath = input.at(0);
+        kfw::io::path_t refPath;
+        if (input.size() > 1) {
+            refPath = input.at(1);
+        }
+        ret = diagnosticDrawProvider()->drawDiffToPng(diffPath, refPath, output);
+    } break;
+    default:
+        break;
+    }
+
+    if (!ret) {
+        LOGE() << "diagnostic ret: " << ret.toString();
+    }
+
+    return ret.code();
+}
+
+int ConsoleApp::processAudioPluginRegistration(const CmdOptions::AudioPluginRegistration& task)
+{
+    Ret ret = make_ret(Ret::Code::Ok);
+
+    if (task.failedPlugin) {
+        LOGI() << "Register incompatible plugin: " << task.pluginPath << ", err code: " << task.failCode;
+        ret = registerAudioPluginsScenario()->registerFailedPlugin(task.pluginPath, task.failCode);
+    } else {
+        LOGI() << "Register plugin: " << task.pluginPath;
+        ret = registerAudioPluginsScenario()->registerPlugin(task.pluginPath);
+    }
+
+    if (!ret) {
+        LOGE() << ret.toString();
+    }
+
+    return ret.code();
+}

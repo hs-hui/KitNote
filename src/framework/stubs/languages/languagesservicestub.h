@@ -1,0 +1,46 @@
+/*
+ * SPDX-License-Identifier: GPL-3.0-only
+ *
+ * KitNote
+ * Drum notation, built on MuseScore Studio
+ *
+ * Copyright (C) 2021 MuseScore Limited and others
+ * Modified for KitNote, 2026
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 3 as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+#ifndef KN_LANGUAGES_LANGUAGESSERVICESTUB_H
+#define KN_LANGUAGES_LANGUAGESSERVICESTUB_H
+
+#include "languages/ilanguagesservice.h"
+
+namespace kfw::languages {
+class LanguagesServiceStub : public ILanguagesService
+{
+public:
+    const LanguagesHash& languages() const override;
+    Language language(const QString& languageCode) const override;
+    const Language& currentLanguage() const override;
+    async::Notification currentLanguageChanged() const override;
+
+    bool hasPlaceholderLanguage() const override;
+    const Language& placeholderLanguage() const override;
+
+    Progress update(const QString& languageCode) override;
+
+    bool restartRequiredToApplyLanguage() const override;
+    async::Channel<bool> restartRequiredToApplyLanguageChanged() const override;
+};
+}
+
+#endif // KN_LANGUAGES_LANGUAGESSERVICESTUB_H

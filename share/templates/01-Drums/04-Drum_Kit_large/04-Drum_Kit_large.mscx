@@ -1,0 +1,670 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<museScore version="4.70">
+  <programVersion>4.7.5</programVersion>
+  <programRevision>abc123456</programRevision>
+  <Score>
+    <eid>G1uZqd1WpiG_5Hv5gRfiwgO</eid>
+    <Division>480</Division>
+    <showInvisible>1</showInvisible>
+    <showUnprintable>1</showUnprintable>
+    <showFrames>1</showFrames>
+    <showMargins>0</showMargins>
+    <open>1</open>
+    <metaTag name="arranger"></metaTag>
+    <metaTag name="audioComUrl"></metaTag>
+    <metaTag name="composer">작곡가 / 편곡가</metaTag>
+    <metaTag name="copyright"></metaTag>
+    <metaTag name="creationDate">2026-10-13</metaTag>
+    <metaTag name="lyricist"></metaTag>
+    <metaTag name="movementNumber"></metaTag>
+    <metaTag name="movementTitle"></metaTag>
+    <metaTag name="platform">Microsoft Windows</metaTag>
+    <metaTag name="source"></metaTag>
+    <metaTag name="sourceRevisionId"></metaTag>
+    <metaTag name="translator"></metaTag>
+    <metaTag name="workNumber"></metaTag>
+    <metaTag name="workTitle">Drum Kit (large)</metaTag>
+    <Order id="orchestra">
+      <name>Orchestra</name>
+      <instrument id="drumset">
+        <family id="drums">드럼</family>
+        </instrument>
+      <section id="woodwind" brackets="true" barLineSpan="true" thinBrackets="true">
+        <family>flutes</family>
+        <family>oboes</family>
+        <family>clarinets</family>
+        <family>saxophones</family>
+        <family>bassoons</family>
+        <unsorted group="woodwinds"/>
+        </section>
+      <section id="brass" brackets="true" barLineSpan="true" thinBrackets="true">
+        <family>horns</family>
+        <family>trumpets</family>
+        <family>cornets</family>
+        <family>flugelhorns</family>
+        <family>trombones</family>
+        <family>tubas</family>
+        <unsorted group="brass"/>
+        </section>
+      <section id="timpani" brackets="true" barLineSpan="true" thinBrackets="true">
+        <family>timpani</family>
+        </section>
+      <section id="percussion" brackets="true" barLineSpan="true" thinBrackets="true">
+        <family>keyboard-percussion</family>
+        <unsorted group="pitched-percussion"/>
+        <family>drums</family>
+        <family>unpitched-metal-percussion</family>
+        <family>unpitched-wooden-percussion</family>
+        <family>other-percussion</family>
+        <unsorted group="unpitched-percussion"/>
+        </section>
+      <family>keyboards</family>
+      <family>harps</family>
+      <family>organs</family>
+      <family>synths</family>
+      <unsorted/>
+      <soloists/>
+      <section id="voices" brackets="true" barLineSpan="false" thinBrackets="true">
+        <family>voices</family>
+        <family>voice-groups</family>
+        </section>
+      <section id="strings" brackets="true" barLineSpan="true" thinBrackets="true">
+        <family>orchestral-strings</family>
+        </section>
+      </Order>
+    <Part id="1">
+      <Staff>
+        <eid>Z4NvOHT9agI_YSGuEPDhc5O</eid>
+        <StaffType group="percussion">
+          <name>perc5Line</name>
+          <keysig>0</keysig>
+          </StaffType>
+        <defaultClef>PERC</defaultClef>
+        </Staff>
+      <trackName>드럼 키트</trackName>
+      <Instrument id="drumset">
+        <longName>드럼 키트</longName>
+        <shortName>D. Kit</shortName>
+        <trackName>드럼 키트 (확장 구성)</trackName>
+        <instrumentId>drum.group.set</instrumentId>
+        <useDrumset>1</useDrumset>
+        <percussionPanelColumns>8</percussionPanelColumns>
+        <Drum pitch="35">
+          <head>normal</head>
+          <line>8</line>
+          <voice>1</voice>
+          <name>Bass Drum 2</name>
+          <stem>2</stem>
+          <panelRow>1</panelRow>
+          <panelColumn>0</panelColumn>
+          </Drum>
+        <Drum pitch="36">
+          <head>normal</head>
+          <line>7</line>
+          <voice>1</voice>
+          <name>Bass Drum 1</name>
+          <stem>2</stem>
+          <shortcut>A</shortcut>
+          <panelRow>0</panelRow>
+          <panelColumn>0</panelColumn>
+          </Drum>
+        <Drum pitch="37">
+          <head>slashed1</head>
+          <line>3</line>
+          <voice>0</voice>
+          <name>Side Stick</name>
+          <stem>1</stem>
+          <panelRow>1</panelRow>
+          <panelColumn>1</panelColumn>
+          </Drum>
+        <Drum pitch="38">
+          <head>normal</head>
+          <line>3</line>
+          <voice>0</voice>
+          <name>Acoustic Snare</name>
+          <stem>1</stem>
+          <shortcut>B</shortcut>
+          <panelRow>0</panelRow>
+          <panelColumn>1</panelColumn>
+          </Drum>
+        <Drum pitch="40">
+          <head>slash</head>
+          <line>3</line>
+          <voice>0</voice>
+          <name>Electric Snare</name>
+          <stem>1</stem>
+          <panelRow>2</panelRow>
+          <panelColumn>0</panelColumn>
+          </Drum>
+        <Drum pitch="41">
+          <head>normal</head>
+          <line>6</line>
+          <voice>0</voice>
+          <name>Low Floor Tom</name>
+          <stem>1</stem>
+          <panelRow>1</panelRow>
+          <panelColumn>7</panelColumn>
+          </Drum>
+        <Drum pitch="42">
+          <head>cross</head>
+          <line>-1</line>
+          <voice>0</voice>
+          <name>Closed Hi-Hat</name>
+          <stem>1</stem>
+          <shortcut>C</shortcut>
+          <panelRow>0</panelRow>
+          <panelColumn>2</panelColumn>
+          </Drum>
+        <Drum pitch="43">
+          <head>normal</head>
+          <line>5</line>
+          <voice>0</voice>
+          <name>High Floor Tom</name>
+          <stem>1</stem>
+          <shortcut>H</shortcut>
+          <panelRow>0</panelRow>
+          <panelColumn>7</panelColumn>
+          </Drum>
+        <Drum pitch="44">
+          <head>cross</head>
+          <line>9</line>
+          <voice>1</voice>
+          <name>Pedal Hi-Hat</name>
+          <stem>2</stem>
+          <panelRow>1</panelRow>
+          <panelColumn>2</panelColumn>
+          </Drum>
+        <Drum pitch="45">
+          <head>normal</head>
+          <line>4</line>
+          <voice>0</voice>
+          <name>Low Tom</name>
+          <stem>1</stem>
+          <panelRow>1</panelRow>
+          <panelColumn>6</panelColumn>
+          </Drum>
+        <Drum pitch="46">
+          <head>xcircle</head>
+          <line>-1</line>
+          <voice>0</voice>
+          <name>Open Hi-Hat</name>
+          <stem>1</stem>
+          <shortcut>D</shortcut>
+          <panelRow>0</panelRow>
+          <panelColumn>3</panelColumn>
+          </Drum>
+        <Drum pitch="47">
+          <head>normal</head>
+          <line>2</line>
+          <voice>0</voice>
+          <name>Low-Mid Tom</name>
+          <stem>1</stem>
+          <panelRow>1</panelRow>
+          <panelColumn>5</panelColumn>
+          </Drum>
+        <Drum pitch="48">
+          <head>normal</head>
+          <line>1</line>
+          <voice>0</voice>
+          <name>Hi-Mid Tom</name>
+          <stem>1</stem>
+          <shortcut>G</shortcut>
+          <panelRow>0</panelRow>
+          <panelColumn>6</panelColumn>
+          </Drum>
+        <Drum pitch="49">
+          <head>cross</head>
+          <line>-2</line>
+          <voice>0</voice>
+          <name>Crash Cymbal 1</name>
+          <stem>1</stem>
+          <shortcut>E</shortcut>
+          <panelRow>0</panelRow>
+          <panelColumn>4</panelColumn>
+          </Drum>
+        <Drum pitch="50">
+          <head>normal</head>
+          <line>0</line>
+          <voice>0</voice>
+          <name>High Tom</name>
+          <stem>1</stem>
+          <panelRow>1</panelRow>
+          <panelColumn>4</panelColumn>
+          </Drum>
+        <Drum pitch="51">
+          <head>cross</head>
+          <line>0</line>
+          <voice>0</voice>
+          <name>Ride Cymbal 1</name>
+          <stem>1</stem>
+          <shortcut>F</shortcut>
+          <panelRow>0</panelRow>
+          <panelColumn>5</panelColumn>
+          </Drum>
+        <Drum pitch="52">
+          <head>normal</head>
+          <noteheads>
+            <whole>noteheadHeavyXHat</whole>
+            <half>noteheadHeavyXHat</half>
+            <quarter>noteheadHeavyXHat</quarter>
+            <breve>noteheadHeavyXHat</breve>
+            </noteheads>
+          <line>-3</line>
+          <voice>0</voice>
+          <name>China Cymbal</name>
+          <stem>1</stem>
+          <panelRow>2</panelRow>
+          <panelColumn>3</panelColumn>
+          </Drum>
+        <Drum pitch="53">
+          <head>diamond</head>
+          <line>0</line>
+          <voice>0</voice>
+          <name>Ride Bell</name>
+          <stem>1</stem>
+          <panelRow>2</panelRow>
+          <panelColumn>5</panelColumn>
+          </Drum>
+        <Drum pitch="54">
+          <head>diamond</head>
+          <line>1</line>
+          <voice>0</voice>
+          <name>Tambourine</name>
+          <stem>1</stem>
+          <panelRow>2</panelRow>
+          <panelColumn>1</panelColumn>
+          </Drum>
+        <Drum pitch="55">
+          <head>cross</head>
+          <line>-4</line>
+          <voice>0</voice>
+          <name>Splash Cymbal</name>
+          <stem>1</stem>
+          <panelRow>2</panelRow>
+          <panelColumn>4</panelColumn>
+          </Drum>
+        <Drum pitch="56">
+          <head>triangle-down</head>
+          <line>1</line>
+          <voice>0</voice>
+          <name>Cowbell</name>
+          <stem>1</stem>
+          <panelRow>2</panelRow>
+          <panelColumn>2</panelColumn>
+          </Drum>
+        <Drum pitch="57">
+          <head>cross</head>
+          <line>-3</line>
+          <voice>0</voice>
+          <name>Crash Cymbal 2</name>
+          <stem>1</stem>
+          <panelRow>1</panelRow>
+          <panelColumn>3</panelColumn>
+          </Drum>
+        <Drum pitch="59">
+          <head>cross</head>
+          <line>2</line>
+          <voice>0</voice>
+          <name>Ride Cymbal 2</name>
+          <stem>1</stem>
+          <panelRow>2</panelRow>
+          <panelColumn>6</panelColumn>
+          </Drum>
+        <clef>PERC</clef>
+        <singleNoteDynamics>0</singleNoteDynamics>
+        <Channel>
+          <controller ctrl="0" value="1"/>
+          <controller ctrl="32" value="0"/>
+          <program value="0"/>
+          <synti>Fluid</synti>
+          </Channel>
+        </Instrument>
+      </Part>
+    <Staff id="1">
+      <VBox>
+        <height>10</height>
+        <eid>+bWFn+WrP0I_/CjsHGWRvZF</eid>
+        <Text>
+          <eid>ka5UONoHEHE_tjXSbOKDIkP</eid>
+          <style>title</style>
+          <text>Drum Kit (large)</text>
+          </Text>
+        <Text>
+          <eid>wGSzajr1IlB_tOJ+6kVqXmK</eid>
+          <style>composer</style>
+          <text>Composer / arranger</text>
+          </Text>
+        </VBox>
+      <Measure>
+        <eid>GAZ3eh5gz6L_iE4cMG/G0/F</eid>
+        <voice>
+          <KeySig>
+            <eid>Crt7dB53Iz_mfYyrOVvG+I</eid>
+            <custom>1</custom>
+            <mode>none</mode>
+            </KeySig>
+          <TimeSig>
+            <eid>XnW6+bAmUjL_HPUFi7xMLVG</eid>
+            <sigN>4</sigN>
+            <sigD>4</sigD>
+            </TimeSig>
+          <Rest>
+            <eid>fUwGXNXJw1I_jT5ku5JahVK</eid>
+            <durationType>measure</durationType>
+            <duration>4/4</duration>
+            </Rest>
+          </voice>
+        </Measure>
+      <Measure>
+        <eid>Cu7J/ELvIoN_RyanT5VWcIF</eid>
+        <voice>
+          <Rest>
+            <eid>Gh5mqAVKoKJ_80eBTJqyV7O</eid>
+            <durationType>measure</durationType>
+            <duration>4/4</duration>
+            </Rest>
+          </voice>
+        </Measure>
+      <Measure>
+        <eid>PFtm/IqP+bC_QhjpbE6unWE</eid>
+        <voice>
+          <Rest>
+            <eid>RzKn5HXQ3xH_Ppo2Q8E/TWD</eid>
+            <durationType>measure</durationType>
+            <duration>4/4</duration>
+            </Rest>
+          </voice>
+        </Measure>
+      <Measure>
+        <eid>zyzUpzMACMM_jq5cJHBmEkE</eid>
+        <voice>
+          <Rest>
+            <eid>y0iPsobYaSF_Pd8G350ghfH</eid>
+            <durationType>measure</durationType>
+            <duration>4/4</duration>
+            </Rest>
+          </voice>
+        </Measure>
+      <Measure>
+        <eid>9SB+yN6AUCI_z5yFflZP5sP</eid>
+        <voice>
+          <Rest>
+            <eid>jTQJEIcYk1M_BBGvxl/JvZD</eid>
+            <durationType>measure</durationType>
+            <duration>4/4</duration>
+            </Rest>
+          </voice>
+        </Measure>
+      <Measure>
+        <eid>i33o9Bk9xv_WDb05dieH+K</eid>
+        <voice>
+          <Rest>
+            <eid>vPtFou9ZJCC_6XCIC3bMhJG</eid>
+            <durationType>measure</durationType>
+            <duration>4/4</duration>
+            </Rest>
+          </voice>
+        </Measure>
+      <Measure>
+        <eid>nkLU8pL47/E_KErGWwqu7mL</eid>
+        <voice>
+          <Rest>
+            <eid>56M+uB+l5OI_/g79WdF14zL</eid>
+            <durationType>measure</durationType>
+            <duration>4/4</duration>
+            </Rest>
+          </voice>
+        </Measure>
+      <Measure>
+        <eid>B428qQrzjjD_Je+7nOsOjsP</eid>
+        <voice>
+          <Rest>
+            <eid>xvmwVJnLhyI_r4jLNYXaRZH</eid>
+            <durationType>measure</durationType>
+            <duration>4/4</duration>
+            </Rest>
+          </voice>
+        </Measure>
+      <Measure>
+        <eid>/T6IIBL8jVI_Ls32SjqXqPD</eid>
+        <voice>
+          <Rest>
+            <eid>83zRCGIzzhB_QdXfebeuzGN</eid>
+            <durationType>measure</durationType>
+            <duration>4/4</duration>
+            </Rest>
+          </voice>
+        </Measure>
+      <Measure>
+        <eid>4ZTYrb2TpVF_SdbtudOSahK</eid>
+        <voice>
+          <Rest>
+            <eid>W/+4Uf8UIHH_vr5oHvwNddO</eid>
+            <durationType>measure</durationType>
+            <duration>4/4</duration>
+            </Rest>
+          </voice>
+        </Measure>
+      <Measure>
+        <eid>MXcwKD4RrkE_yFtdNNy0i4M</eid>
+        <voice>
+          <Rest>
+            <eid>UPNRgGRO+E_c5qGebrLLrO</eid>
+            <durationType>measure</durationType>
+            <duration>4/4</duration>
+            </Rest>
+          </voice>
+        </Measure>
+      <Measure>
+        <eid>CszbW5MEqzN_h6lgK6p9qSC</eid>
+        <voice>
+          <Rest>
+            <eid>/g4Sf8CRDoB_CatrssZfvcE</eid>
+            <durationType>measure</durationType>
+            <duration>4/4</duration>
+            </Rest>
+          </voice>
+        </Measure>
+      <Measure>
+        <eid>f2vBJ3mRsgC_uoONwJpV+7M</eid>
+        <voice>
+          <Rest>
+            <eid>Vd5803jVCVI_sEZy0kHyU9N</eid>
+            <durationType>measure</durationType>
+            <duration>4/4</duration>
+            </Rest>
+          </voice>
+        </Measure>
+      <Measure>
+        <eid>NQAmdt9SHiM_a75N7+kkDsI</eid>
+        <voice>
+          <Rest>
+            <eid>QVXcF6LN9zJ_BbaS8xdpomI</eid>
+            <durationType>measure</durationType>
+            <duration>4/4</duration>
+            </Rest>
+          </voice>
+        </Measure>
+      <Measure>
+        <eid>7BYnR+bKbOK_HkCMfYDKJKP</eid>
+        <voice>
+          <Rest>
+            <eid>niKAoEWad6H_cal1uojQ90N</eid>
+            <durationType>measure</durationType>
+            <duration>4/4</duration>
+            </Rest>
+          </voice>
+        </Measure>
+      <Measure>
+        <eid>eo7yVZRCNnG_Otwv/E3e2MN</eid>
+        <voice>
+          <Rest>
+            <eid>bUls6B4hNeF_cQod2l8uxNF</eid>
+            <durationType>measure</durationType>
+            <duration>4/4</duration>
+            </Rest>
+          </voice>
+        </Measure>
+      <Measure>
+        <eid>8KKgLBamHgN_40Crp9TJTmE</eid>
+        <voice>
+          <Rest>
+            <eid>aNvy5yCgf4J_5YKtPtuo9+C</eid>
+            <durationType>measure</durationType>
+            <duration>4/4</duration>
+            </Rest>
+          </voice>
+        </Measure>
+      <Measure>
+        <eid>VXjiIu08CqN_gChUHWpkpMJ</eid>
+        <voice>
+          <Rest>
+            <eid>CMc+fROeOM_a0B3q+Vgcr</eid>
+            <durationType>measure</durationType>
+            <duration>4/4</duration>
+            </Rest>
+          </voice>
+        </Measure>
+      <Measure>
+        <eid>baPF6b3PM9D_rhq1ehPW95F</eid>
+        <voice>
+          <Rest>
+            <eid>qoK31KC6HH_fDIvDSVOplL</eid>
+            <durationType>measure</durationType>
+            <duration>4/4</duration>
+            </Rest>
+          </voice>
+        </Measure>
+      <Measure>
+        <eid>Tuz5JPYNuwF_W4bGVZan1mB</eid>
+        <voice>
+          <Rest>
+            <eid>0IxV3bl85zP_8sHO4A38kJJ</eid>
+            <durationType>measure</durationType>
+            <duration>4/4</duration>
+            </Rest>
+          </voice>
+        </Measure>
+      <Measure>
+        <eid>WiNEXOv0NEP_tMTaZZncYmP</eid>
+        <voice>
+          <Rest>
+            <eid>Yojgkrz4gJJ_trLo2BOF0UD</eid>
+            <durationType>measure</durationType>
+            <duration>4/4</duration>
+            </Rest>
+          </voice>
+        </Measure>
+      <Measure>
+        <eid>mwMFbBzr7sJ_MzP01NSIDcK</eid>
+        <voice>
+          <Rest>
+            <eid>2GYXen3fzgC_+p3yPwGqjxG</eid>
+            <durationType>measure</durationType>
+            <duration>4/4</duration>
+            </Rest>
+          </voice>
+        </Measure>
+      <Measure>
+        <eid>QTBYD1jRIYH_qvXrMN4nsFE</eid>
+        <voice>
+          <Rest>
+            <eid>3cLTeKAL0+L_G1fY76ogoFD</eid>
+            <durationType>measure</durationType>
+            <duration>4/4</duration>
+            </Rest>
+          </voice>
+        </Measure>
+      <Measure>
+        <eid>VCVyOvLbXPK_iBHF2vUcReN</eid>
+        <voice>
+          <Rest>
+            <eid>qo+EmgiUUx_vor1lAbg8NH</eid>
+            <durationType>measure</durationType>
+            <duration>4/4</duration>
+            </Rest>
+          </voice>
+        </Measure>
+      <Measure>
+        <eid>SCYO0cw6LiC_8/UpXVLbkfN</eid>
+        <voice>
+          <Rest>
+            <eid>vIq+G3dx83I_/tSnOnTSTXH</eid>
+            <durationType>measure</durationType>
+            <duration>4/4</duration>
+            </Rest>
+          </voice>
+        </Measure>
+      <Measure>
+        <eid>0HVnk6D2xlB_bbn8rLvrjhK</eid>
+        <voice>
+          <Rest>
+            <eid>lsgwfDEEZoF_OyBJrfthcJO</eid>
+            <durationType>measure</durationType>
+            <duration>4/4</duration>
+            </Rest>
+          </voice>
+        </Measure>
+      <Measure>
+        <eid>eLLQAnz9T/D_bgc8vIJtFID</eid>
+        <voice>
+          <Rest>
+            <eid>QVZ4mARvIRD_piyzmb/TWHE</eid>
+            <durationType>measure</durationType>
+            <duration>4/4</duration>
+            </Rest>
+          </voice>
+        </Measure>
+      <Measure>
+        <eid>2xHGe1El82_T7JWGkIfceK</eid>
+        <voice>
+          <Rest>
+            <eid>0IXn1Hs6WNP_zDkLN042Mv</eid>
+            <durationType>measure</durationType>
+            <duration>4/4</duration>
+            </Rest>
+          </voice>
+        </Measure>
+      <Measure>
+        <eid>SNqi12KzNjG_vdliefq9CGJ</eid>
+        <voice>
+          <Rest>
+            <eid>w3Mkpzc30aF_CqYgF2EtpDF</eid>
+            <durationType>measure</durationType>
+            <duration>4/4</duration>
+            </Rest>
+          </voice>
+        </Measure>
+      <Measure>
+        <eid>0ld0k7RjepD_T0aN6yXBjBI</eid>
+        <voice>
+          <Rest>
+            <eid>oi5AhGbcfAN_D4Jnm2pvIXM</eid>
+            <durationType>measure</durationType>
+            <duration>4/4</duration>
+            </Rest>
+          </voice>
+        </Measure>
+      <Measure>
+        <eid>C1XtIC3XzkJ_eNUXh56u7oE</eid>
+        <voice>
+          <Rest>
+            <eid>FmedDjRrTzO_B6foiNCdl1H</eid>
+            <durationType>measure</durationType>
+            <duration>4/4</duration>
+            </Rest>
+          </voice>
+        </Measure>
+      <Measure>
+        <eid>YbauIMW3A4M_UafT+iZFnEO</eid>
+        <voice>
+          <Rest>
+            <eid>Vtttiic8wpG_ZpJkobez6mE</eid>
+            <durationType>measure</durationType>
+            <duration>4/4</duration>
+            </Rest>
+          </voice>
+        </Measure>
+      </Staff>
+    </Score>
+  </museScore>

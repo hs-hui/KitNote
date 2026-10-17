@@ -1,0 +1,189 @@
+name: 'Build: macOS'
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      build_mode:
+        description: 'Build mode: devel, nightly, testing, stable'
+        default: 'devel'
+        required: true
+  workflow_call:
+    inputs:
+      build_mode:
+        description: 'Build mode: devel, nightly, testing, stable'
+        default: 'devel'
+        type: string
+        required: true
+      build_number:
+        description: "Build number (if not provided, will be generated)"
+        default: ""
+        type: string
+        required: false
+    outputs:
+      artifact_name:
+        description: "Name of the uploaded artifact: the .dmg"
+        value: ${{ jobs.macos_universal.outputs.artifact_name }}
+      dmg_name:
+        description: "File name of the disk image, KitNote-<version>-macos-<arch>.dmg"
+        value: ${{ jobs.macos_universal.outputs.dmg_name }}
+
+# KitNote: signing and notarization need these repository secrets (or the same ones passed with
+# `secrets: inherit` from a release workflow). Without them the app is ad-hoc signed:
+#   KITNOTE_MACOS_CERT_P12        Developer ID Application certificate with its key, .p12, base64
+#   KITNOTE_MACOS_CERT_PASSWORD   password of that .p12
+#   KITNOTE_APPLE_ID              Apple ID used for notarization
+#   KITNOTE_APPLE_TEAM_ID         10-character team ID
+#   KITNOTE_APPLE_APP_PASSWORD    app-specific password for that Apple ID
+#
+# The runner is macos-26 (Apple silicon, Xcode 26): the app icon is an Icon Composer bundle, which
+# needs actool from Xcode 26. macos-14 is retired on 2026-11-02, so it is not used.
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-macos-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  macos_universal:
+    runs-on: macos-26
+    timeout-minutes: 180
+    outputs:
+      artifact_name: ${{ steps.configure.outputs.upload_artifact_name }}
+      dmg_name: ${{ steps.names.outputs.dmg_name }}
+    steps:
+    - name: Clone repository
+      uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+
+    - name: Configure workflow
+      id: configure
+      run: |
+        bash ./buildscripts/ci/tools/make_build_mode_env.sh -e ${{ github.event_name }} -m "${{ inputs.build_mode || 'devel' }}"
+        BUILD_MODE=$(cat ./build.artifacts/env/build_mode.env)
+
+        if [ -n "${{ inputs.build_number }}" ]; then
+          BUILD_NUMBER="${{ inputs.build_number }}"
+          bash ./buildscripts/ci/tools/make_build_number.sh "$BUILD_NUMBER"
+        else
+          bash ./buildscripts/ci/tools/make_build_number.sh
+        fi
+        BUILD_NUMBER=$(cat ./build.artifacts/env/build_number.env)
+
+        DO_PLACEHOLDER_TRANSLATIONS='false'
+        if [[ "$BUILD_MODE" == "nightly" || "$BUILD_MODE" == "devel" ]]; then
+          DO_PLACEHOLDER_TRANSLATIONS='true'
+        fi
+
+        # release.yml downloads the package by this name; keep the two in sync.
+        UPLOAD_ARTIFACT_NAME="KitNote-macos"
+
+        echo "github.repository: ${{ github.repository }}"
+        echo "BUILD_MODE=$BUILD_MODE" | tee -a $GITHUB_ENV
+        echo "BUILD_NUMBER=$BUILD_NUMBER" | tee -a $GITHUB_ENV
+        echo "DO_PLACEHOLDER_TRANSLATIONS=$DO_PLACEHOLDER_TRANSLATIONS" | tee -a $GITHUB_ENV
+        echo "UPLOAD_ARTIFACT_NAME=$UPLOAD_ARTIFACT_NAME" | tee -a $GITHUB_ENV
+        echo "upload_artifact_name=$UPLOAD_ARTIFACT_NAME" | tee -a $GITHUB_OUTPUT
+
+    - name: Restore ccache files
+      id: restore-ccache
+      uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25 # v5.1.0
+      with:
+        path: ${{ github.workspace }}/.ccache
+        key: ${{runner.os}}-${{runner.arch}}-ccache-
+        restore-keys: ${{runner.os}}-${{runner.arch}}-ccache-
+    - name: Setup ccache and ninja
+      run: |
+        brew install ccache ninja
+        bash ./buildscripts/ci/tools/setup_ccache_config.sh
+
+    - name: Setup Python
+      uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+      with:
+        python-version: '3.12'
+
+    - name: Restore Qt
+      id: restore-qt
+      uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5.1.0
+      with:
+        path: ~/Qt
+        key: qt-6.10.2-macos-clang_64-qt5compat-qtnetworkauth-qtshadertools-qtwebsockets
+    - name: Install Qt
+      # Official Qt mirrors through aqtinstall; the same modules as the Windows build
+      run: |
+        bash ./buildscripts/ci/macos/install_qt.sh
+
+    - name: Show tools
+      run: |
+        cmake --version
+        ninja --version
+        xcodebuild -version
+        xcrun actool --version || true
+        python3 --version
+        lupdate -version || true
+
+    - name: Generate _en.ts files
+      env:
+        LUPDATE_ARGS: ""
+        POSTPROCESS_ARGS: "--warn-only ${{ env.DO_PLACEHOLDER_TRANSLATIONS == 'true' && '--generate-placeholder-translations' || '' }}"
+      run: |
+        bash ./tools/translations/run_lupdate.sh
+
+    - name: Build
+      run: |
+        bash ./buildscripts/ci/macos/build.sh -n ${{ env.BUILD_NUMBER }}
+    - name: Show ccache stats
+      run: |
+        ccache -sv
+
+    - name: Import signing certificate
+      env:
+        KITNOTE_MACOS_CERT_P12: ${{ secrets.KITNOTE_MACOS_CERT_P12 }}
+        KITNOTE_MACOS_CERT_PASSWORD: ${{ secrets.KITNOTE_MACOS_CERT_PASSWORD }}
+      run: |
+        bash ./buildscripts/ci/macos/import_signing_certificate.sh
+    - name: Package
+      env:
+        KITNOTE_APPLE_ID: ${{ secrets.KITNOTE_APPLE_ID }}
+        KITNOTE_APPLE_TEAM_ID: ${{ secrets.KITNOTE_APPLE_TEAM_ID }}
+        KITNOTE_APPLE_APP_PASSWORD: ${{ secrets.KITNOTE_APPLE_APP_PASSWORD }}
+      run: |
+        bash ./buildscripts/ci/macos/package.sh
+    - name: Smoke test
+      run: |
+        bash ./buildscripts/ci/macos/smoke_test.sh applebuild/KitNote.app
+    - name: Remove signing keychain
+      if: always()
+      run: |
+        if [ -n "${KITNOTE_KEYCHAIN:-}" ]; then security delete-keychain "$KITNOTE_KEYCHAIN" || true; fi
+
+    - name: Checksum
+      run: |
+        bash ./buildscripts/ci/tools/checksum.sh
+    - name: Read names
+      id: names
+      run: |
+        echo "dmg_name=$(cat ./build.artifacts/env/artifact_name.env)" | tee -a $GITHUB_OUTPUT
+    - name: Upload artifacts on GitHub
+      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+      with:
+        name: ${{ env.UPLOAD_ARTIFACT_NAME }}
+        # Only the disk image: release.yml requires exactly one .dmg in this artifact.
+        path: ./build.artifacts/${{ steps.names.outputs.dmg_name }}
+
+    - name: Prepare ccache files for saving
+      id: prepare-save-ccache
+      if: always()
+      run: |
+        ccache --recompress 10
+        echo "CCACHE_TIMESTAMP=$(date -u +"%F-%T")" | tee -a $GITHUB_OUTPUT
+    - name: Save ccache files
+      if: always()
+      uses: actions/cache/save@caa296126883cff596d87d8935842f9db880ef25 # v5.1.0
+      with:
+        key: ${{ steps.restore-ccache.outputs.cache-primary-key }}${{ steps.prepare-save-ccache.outputs.CCACHE_TIMESTAMP }}
+        path: ${{ github.workspace }}/.ccache

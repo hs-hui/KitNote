@@ -1,0 +1,6 @@
+
+const config = {
+    KFW_MODULE_AUDIO_WORKER: '{{KFW_MODULE_AUDIO_WORKER}}'
+};
+
+export default config;
