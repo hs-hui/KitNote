@@ -1,0 +1,140 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-18T00:30:00Z",
+  "title": "Design System: KitNote Website",
+  "extensions": {
+    "colorMeta": {
+      "paper": { "role": "neutral", "displayName": "Paper", "canonical": "#F4F3EE", "tonalRamp": ["#0C0B08", "#262521", "#43423E", "#62615D", "#83827E", "#A6A5A0", "#CAC9C4", "#EFEEEA"] },
+      "paper-2": { "role": "neutral", "displayName": "Paper Two", "canonical": "#E9E7E0", "tonalRamp": ["#0C0B07", "#272520", "#44423C", "#63615B", "#84827C", "#A7A59E", "#CBC9C2", "#F0EEE7"] },
+      "popup": { "role": "neutral", "displayName": "Popup Cream", "canonical": "#FAF9F5", "tonalRamp": ["#0C0B09", "#262522", "#43423F", "#62615E", "#83827F", "#A6A5A1", "#CAC9C5", "#EFEEEA"] },
+      "field": { "role": "neutral", "displayName": "Field White", "canonical": "#FFFFFF", "tonalRamp": ["#0B0B0B", "#252525", "#424242", "#616161", "#828282", "#A5A5A5", "#C9C9C9", "#EEEEEE"] },
+      "canvas": { "role": "neutral", "displayName": "Score Canvas", "canonical": "#E3E1D9", "tonalRamp": ["#0D0B06", "#27251F", "#44423C", "#63615A", "#84827B", "#A7A59D", "#CBC9C1", "#F1EFE6"] },
+      "stroke": { "role": "neutral", "displayName": "Stroke", "canonical": "#D8D5CB", "tonalRamp": ["#0D0B05", "#27251D", "#44423A", "#646158", "#858279", "#A8A59B", "#CCC9BF", "#F1EEE4"] },
+      "button": { "role": "neutral", "displayName": "Button Grey", "canonical": "#DAD7CD", "tonalRamp": ["#0D0B05", "#27251D", "#44423A", "#646158", "#858279", "#A8A59B", "#CCC9BF", "#F1EEE4"] },
+      "ink": { "role": "primary", "displayName": "Ink", "canonical": "#2B2B28", "tonalRamp": ["#0B0B09", "#252522", "#42423F", "#61615E", "#82827F", "#A5A5A1", "#C9C9C5", "#EFEFEB"] },
+      "ink-2": { "role": "neutral", "displayName": "Ink Two", "canonical": "#55534C", "tonalRamp": ["#0D0B06", "#27251F", "#44423B", "#63615A", "#84827B", "#A7A59D", "#CBC9C1", "#F1EEE6"] },
+      "muted": { "role": "neutral", "displayName": "Muted", "canonical": "#6F6C63", "tonalRamp": ["#0D0B05", "#27251D", "#45423A", "#646158", "#858279", "#A8A59B", "#CCC9BF", "#F2EEE4"] },
+      "ink-hover": { "role": "primary", "displayName": "Ink Hover", "canonical": "#3C3C38", "tonalRamp": ["#0B0B08", "#252522", "#42423E", "#61615D", "#83837E", "#A5A5A1", "#C9C9C4", "#EFEFEA"] },
+      "sage": { "role": "secondary", "displayName": "Sage", "canonical": "#8DB3A4", "tonalRamp": ["#000F09", "#072C21", "#274A3E", "#466A5D", "#678C7D", "#89AFA0", "#ACD3C4", "#D1F9E9"] },
+      "sage-ink": { "role": "secondary", "displayName": "Sage Ink", "canonical": "#3F6F5E", "tonalRamp": ["#000F09", "#002D21", "#1B4C3D", "#3C6C5B", "#5E8E7C", "#80B29F", "#A3D6C3", "#C8FCE8"] },
+      "focus": { "role": "tertiary", "displayName": "Focus Violet", "canonical": "#75507B", "tonalRamp": ["#18001C", "#36153C", "#55325B", "#77517D", "#99729F", "#BD95C3", "#E2B8E9", "#FCE6FF"] },
+      "hat": { "role": "tertiary", "displayName": "Hat Amber", "canonical": "#E3B95B", "tonalRamp": ["#110A00", "#312300", "#553E00", "#7B5C06", "#A37B09", "#C89F3E", "#EDC365", "#FFEDC8"] },
+      "kick": { "role": "tertiary", "displayName": "Kick Coral", "canonical": "#D98B6A", "tonalRamp": ["#190400", "#421501", "#6E2A05", "#924A2B", "#B76C4C", "#DD8F6E", "#FEB697", "#FFE9E1"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "The two-line hero headline only. Pretendard 800, tight tracking." },
+      "headline": { "displayName": "Headline", "purpose": "Section headings: Pattern library, Download KitNote." },
+      "title": { "displayName": "Title", "purpose": "Feature panel headings inside the library popup." },
+      "body": { "displayName": "Body", "purpose": "Reading text, lede and panel copy. Korean keeps word-break keep-all." },
+      "label": { "displayName": "Label", "purpose": "Tabs, chips, pills and small captions." }
+    },
+    "shadows": [
+      { "name": "popup-lift", "value": "0 1px 2px rgba(43, 43, 40, .06), 0 18px 40px -22px rgba(43, 43, 40, .38)", "purpose": "Every popup panel. Soft and ambient; no hard offset." },
+      { "name": "engraved-page", "value": "0 2px 6px rgba(43, 43, 40, .08), 0 20px 40px -26px rgba(43, 43, 40, .45)", "purpose": "The score-page image on the score canvas." },
+      { "name": "playhead-ring", "value": "0 0 0 2px rgba(43, 43, 40, .28)", "purpose": "State ring on the step cell the transport is on. No blur." },
+      { "name": "accent-inset", "value": "inset 0 0 0 2px var(--ink)", "purpose": "Accent marker on a step cell. Inset, no offset." }
+    ],
+    "motion": [
+      { "name": "state", "value": "background-color .15s, color .15s", "purpose": "Hover and selection changes on buttons and tabs." },
+      { "name": "press", "value": "transform .1s; translateY(1px) on buttons, scale(.96) on the play button", "purpose": "Pressed feedback." },
+      { "name": "cell", "value": "background-color .1s, box-shadow .1s", "purpose": "Step cell toggles." },
+      { "name": "reveal", "value": "opacity .25s, transform .25s", "purpose": "AI tool-call list items appearing in the terminal." },
+      { "name": "caret", "value": "blink 1s steps(1) infinite", "purpose": "Terminal caret. Stops under prefers-reduced-motion." }
+    ],
+    "breakpoints": [
+      { "name": "narrow", "value": "1100px" },
+      { "name": "mobile", "value": "640px" },
+      { "name": "wrap", "value": "1312px max container" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one download action per view: ink fill, paper text, 40px high.",
+      "html": "<a class='ds-btn-primary' href='#'>Download</a>",
+      "css": ".ds-btn-primary{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:40px;padding:0 16px;border:0;border-radius:8px;background:var(--ink,#2B2B28);color:var(--paper,#F4F3EE);font:600 15px/1 Pretendard,sans-serif;text-decoration:none;white-space:nowrap;transition:background-color .15s,transform .1s}.ds-btn-primary:hover{background:var(--ink-hover,#3C3C38)}.ds-btn-primary:active{transform:translateY(1px)}.ds-btn-primary:focus-visible{outline:2px solid var(--focus,#75507B);outline-offset:2px;border-radius:6px}"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "The alternative action: Button Grey fill, ink text, same 40px height.",
+      "html": "<a class='ds-btn-grey' href='#'>Other platforms</a>",
+      "css": ".ds-btn-grey{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:40px;padding:0 16px;border:0;border-radius:8px;background:var(--button,#DAD7CD);color:var(--ink,#2B2B28);font:600 15px/1 Pretendard,sans-serif;text-decoration:none;white-space:nowrap;transition:background-color .15s,transform .1s}.ds-btn-grey:hover{background:#CFCCC1}.ds-btn-grey:active{transform:translateY(1px)}.ds-btn-grey:focus-visible{outline:2px solid var(--focus,#75507B);outline-offset:2px;border-radius:6px}"
+    },
+    {
+      "name": "Selection Pill",
+      "kind": "chip",
+      "refersTo": "selection-pill",
+      "description": "Preset chips and library tabs. Selected state is a sage fill with ink text.",
+      "html": "<div role='tablist'><button class='ds-pill' role='tab' aria-selected='true'>Grooves</button><button class='ds-pill' role='tab' aria-selected='false'>Fills</button></div>",
+      "css": ".ds-pill{font:500 14px/1.55 Pretendard,sans-serif;height:30px;padding:0 12px;border:0;border-radius:99px;background:var(--paper-2,#E9E7E0);color:var(--ink,#2B2B28);cursor:pointer;transition:background-color .2s}.ds-pill:hover{background:var(--button,#DAD7CD)}.ds-pill[aria-selected='true'],.ds-pill[aria-pressed='true']{background:var(--sage,#8DB3A4)}.ds-pill:focus-visible{outline:2px solid var(--focus,#75507B);outline-offset:2px}"
+    },
+    {
+      "name": "Popup Panel",
+      "kind": "card",
+      "refersTo": "popup",
+      "description": "The app's popup: cream fill, 1px stroke, 12px radius, soft lift. Every panel on the page is one.",
+      "html": "<div class='ds-popup'><div class='ds-popup-head'>Step grid</div></div>",
+      "css": ".ds-popup{background:var(--popup,#FAF9F5);border:1px solid var(--stroke,#D8D5CB);border-radius:12px;box-shadow:0 1px 2px rgba(43,43,40,.06),0 18px 40px -22px rgba(43,43,40,.38);padding:16px 22px}.ds-popup-head{font:600 15px/1.55 Pretendard,sans-serif;color:var(--ink,#2B2B28)}"
+    },
+    {
+      "name": "Step Cell",
+      "kind": "custom",
+      "refersTo": "step-cell",
+      "description": "One step of the grid. Off is Score Canvas; on takes the row colour through --c.",
+      "html": "<div class='ds-grid'><button class='ds-cell' style='--c:#E3B95B' aria-label='Closed hi-hat, step 1'></button><button class='ds-cell on' style='--c:#E3B95B' aria-label='Closed hi-hat, step 2'></button><button class='ds-cell on acc' style='--c:#D98B6A' aria-label='Bass drum, step 3'></button></div>",
+      "css": ".ds-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:4px;row-gap:5px}.ds-cell{height:26px;width:100%;border:0;padding:0;border-radius:5px;background:var(--canvas,#E3E1D9);cursor:pointer;transition:background-color .1s,box-shadow .1s}.ds-cell:hover{background:#D3D0C6}.ds-cell.on{background:var(--c)}.ds-cell.on:hover{filter:brightness(.95)}.ds-cell.acc{box-shadow:inset 0 0 0 2px var(--ink,#2B2B28)}.ds-cell.ghost{background:transparent;box-shadow:inset 0 0 0 2px var(--c)}.ds-cell.now{box-shadow:0 0 0 2px rgba(43,43,40,.28)}.ds-cell:focus-visible{outline:2px solid var(--focus,#75507B);outline-offset:2px;border-radius:6px}"
+    },
+    {
+      "name": "Tempo Field",
+      "kind": "input",
+      "refersTo": "tempo-field",
+      "description": "BPM control: white field, 1px stroke, 8px radius, two small icon buttons around a tabular readout.",
+      "html": "<div class='ds-field'><button class='ds-ico' aria-label='Slower'><svg width='15' height='15' viewBox='0 0 24 24' aria-hidden='true'><path d='M6 12h12' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round'/></svg></button><output>112</output><span class='ds-unit'>BPM</span><button class='ds-ico' aria-label='Faster'><svg width='15' height='15' viewBox='0 0 24 24' aria-hidden='true'><path d='M6 12h12M12 6v12' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round'/></svg></button></div>",
+      "css": ".ds-field{display:inline-flex;align-items:center;gap:4px;background:var(--field,#FFFFFF);border:1px solid var(--stroke,#D8D5CB);border-radius:8px;padding:2px}.ds-field output{min-width:2.2em;text-align:right;font-weight:600;font-variant-numeric:tabular-nums}.ds-unit{font-size:12px;color:var(--muted,#6F6C63);margin-right:2px}.ds-ico{width:28px;height:28px;display:inline-grid;place-items:center;border:0;border-radius:6px;background:transparent;color:var(--ink,#2B2B28);cursor:pointer}.ds-ico:hover{background:var(--paper-2,#E9E7E0)}.ds-ico:focus-visible{outline:2px solid var(--focus,#75507B);outline-offset:2px}"
+    },
+    {
+      "name": "Terminal",
+      "kind": "custom",
+      "refersTo": "terminal",
+      "description": "The AI demo: an ink surface with paper text, 14px radius, no shadow. Used once, for the AI tab.",
+      "html": "<div class='ds-term'><div class='ds-term-head'><span>Claude Code</span><span class='ds-demo'>Demo</span></div><div class='ds-term-body'><p class='ds-say'><span class='ds-gt'>&gt;</span> In song.kitnote, change measures 9–16 from hi-hat to ride.</p></div></div>",
+      "css": ".ds-term{background:var(--ink,#2B2B28);color:var(--paper,#F4F3EE);border-radius:14px;overflow:hidden}.ds-term-head{display:flex;align-items:center;gap:14px;padding:13px 18px;border-bottom:1px solid #3A3A36;font-size:13px;color:#A9A79E}.ds-demo{margin-left:auto;font-size:12px;font-weight:600;color:var(--ink,#2B2B28);background:var(--hat,#E3B95B);border-radius:99px;padding:2px 10px}.ds-term-body{padding:22px 24px 26px}.ds-say{font-size:16.5px;line-height:1.6}.ds-gt{color:var(--sage,#8DB3A4);font-weight:700}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Pattern Library, Opened Full-Size",
+    "overview": "The page is the app's own pattern library at life size. The hero is the step-grid popup, a working instrument rather than an illustration. Below it, the pattern cards and the other features (audio to chart, engraving, AI) are tabs of the same popup. Nothing is set apart from the app: the same paper ground, the same popup panels with hairline strokes, the same ink buttons and the same sage selection pill.\n\nThe density is calm and dense at once. Grids carry the content: sixteen cells per row, nine labelled rows, mini grids on the cards. Text is short and sits beside the artefact it describes. Headlines are heavy and tightly tracked; everything else is quiet.",
+    "keyCharacteristics": [
+      "Warm paper ground (#F4F3EE) with ink (#2B2B28) type; no pure white page.",
+      "Popup panels as the only raised surfaces: hairline stroke, 12px radius, soft shadow.",
+      "Sage (#8DB3A4) marks selection; ink marks action.",
+      "Pretendard 800 headlines, Pretendard 400 body, Korean line-breaking set to keep-all.",
+      "The drum-row colours and the focus violet are the only saturated colours on the page."
+    ],
+    "rules": [
+      { "name": "The App Is The Page Rule", "body": "Website colours come from the app's light theme and nothing else. A new colour on the site must first exist in the app.", "section": "colors" },
+      { "name": "The Sage Means Selected Rule", "body": "Sage as a fill means \"this is the current choice\": the active tab, a pressed chip, a selected card, the row for your own platform. Sage is also the snare row's colour in the step grid, so it is shared; no other solid fill uses it. Sage-ink as text means a link or a version figure.", "section": "colors" },
+      { "name": "The Heavy Headline Rule", "body": "Headlines are 800 weight with negative tracking. Body text, labels and popup titles stay at 600 or below; the wordmark and the terminal prompt are the only 700s. Weight marks importance; size alone is not enough.", "section": "typography" },
+      { "name": "The Lift Is For Popups Rule", "body": "A surface gets a shadow only when it is a popup or an engraved page. Cards, tabs and fields are separated by fill or a 1px stroke, never by shadow.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do use Paper (#F4F3EE) as the page ground and Popup Cream (#FAF9F5) for popups, each popup with a 1px Stroke (#D8D5CB) border and a 12px radius.",
+      "Do use the ink (#2B2B28) button for the download action only, and Button Grey (#DAD7CD) for the alternative platform action.",
+      "Do colour the step grid with the three drum-row colours only: Hat Amber for cymbals and hi-hats, Sage for snare and toms, Kick Coral for the bass drum.",
+      "Do show keyboard focus as a 2px Focus Violet (#75507B) outline with a 2px offset.",
+      "Do keep Korean body text at `word-break: keep-all`.",
+      "Do respect `prefers-reduced-motion`: stop the caret blink and the smooth scroll.",
+      "Do keep the headline weight at 800 with tracking between -0.02em and -0.04em."
+    ],
+    "donts": [
+      "Don't use gradients, glass effects, glows or neon. The app's light theme has none, and the page has none; the only shadows are the soft popup lift and the engraved-page lift.",
+      "Don't add a colour that is not in the app's light theme. A new brand colour starts in the app.",
+      "Don't use sage as a fill for anything other than the current choice.",
+      "Don't put a shadow on a card, tab, field or button; they are separated by fill or stroke."
+    ]
+  }
+}

@@ -48,6 +48,14 @@ MuseScore Studio has no central notice file; each component keeps its licence ne
 
 The audio changes applied during training (rooms, colour, drive, noise, tones, what a separation leaves) are KitNote's own.
 
+## On the website (`website/`)
+
+The website at <https://kitnote.hui.kr> is deployed from `website/` and is not part of the program. It ships:
+
+- `website/assets/fonts/Pretendard-*.subset.woff2` - the official subset files of [Pretendard](https://github.com/orioncactus/pretendard) 1.3.9, unmodified. SIL Open Font License 1.1, [website/assets/fonts/LICENSE.txt](website/assets/fonts/LICENSE.txt).
+- `website/assets/drums/kit.mp3` - one stroke of each drum, rendered by KitNote with its drum SoundFont (the percussion of MS Basic). MIT, [website/assets/drums/LICENSE-MS-Basic.md](website/assets/drums/LICENSE-MS-Basic.md).
+- `website/assets/demo-groove.mp3` and `website/assets/score-page.webp` - a demo groove played and engraved by KitNote.
+
 ## Fonts shipped with KitNote
 
 Every font file that the build installs (listed in `src/app/CMakeLists.txt` and the `.qrc` files under `src/engraving/data/fonts/`), with its licence. The interface font Pretendard is in the table above.

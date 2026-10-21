@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KitNote — drum notation, nothing else</title>
+<meta name="description" content="KitNote is a free, open-source notation editor made only for the drum kit: a step grid, a pattern library, drum charts from recordings, and an MCP server for AI tools. Windows and macOS.">
+<meta name="theme-color" content="#F4F3EE">
+<meta property="og:title" content="KitNote — drum notation, nothing else">
+<meta property="og:description" content="A free, open-source notation editor made only for the drum kit. Windows and macOS.">
+<meta property="og:image" content="/assets/og.png">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="preload" href="assets/fonts/Pretendard-ExtraBold.subset.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="i-mark" viewBox="14 18 100 90">
+    <path fill="currentColor" d="M114 105H14V104H114V105ZM114 93H14V92H114V93ZM114 81H14V80H114V81ZM114 69H14V68H114V69ZM114 57H14V56H114V57Z"/>
+    <path fill="currentColor" d="M108.131 84.6279C108.135 84.7398 108.135 84.8524 108.131 84.9658V85H108.129C108.031 87.2998 106.27 89.8858 103.428 91.5264C99.602 93.7355 95.2685 93.3933 93.7497 90.7627C92.2315 88.1321 94.1023 84.209 97.9284 82C101.23 80.094 104.907 80.0881 106.83 81.8115V56.2207L106.39 56.793L100.5 52.2617L94.609 56.793L93.3903 55.207L98.859 51L93.3903 46.793L94.609 45.207L100.5 49.7383L106.39 45.207L106.83 45.7783V25H83.1305V72.6279C83.1348 72.7398 83.1345 72.8524 83.1305 72.9658V73H83.1286C83.0313 75.2998 81.2699 77.8858 78.4284 79.5264C74.602 81.7355 70.2685 81.3933 68.7497 78.7627C67.2315 76.1321 69.1023 72.209 72.9284 70C76.2297 68.094 79.907 68.0881 81.8298 69.8115V56.2207L81.3903 56.793L75.4997 52.2617L69.609 56.793L68.3903 55.207L73.859 51L68.3903 46.793L69.609 45.207L75.4997 49.7383L81.3903 45.207L81.8298 45.7783V25H58.1305V96.6279C58.1348 96.7398 58.1345 96.8524 58.1305 96.9658V97H58.1286C58.0313 99.2998 56.2699 101.886 53.4284 103.526C49.602 105.736 45.2685 105.393 43.7497 102.763C42.2315 100.132 44.1023 96.209 47.9284 94C51.2297 92.094 54.907 92.0881 56.8298 93.8115V56.2207L56.3903 56.793L50.4997 52.2617L44.609 56.793L43.3903 55.207L48.859 51L43.3903 46.793L44.609 45.207L50.4997 49.7383L56.3903 45.207L56.8298 45.7783V25H33.1247V96.5381C33.2641 98.946 31.462 101.775 28.4284 103.526C24.602 105.736 20.2685 105.393 18.7497 102.763C17.2315 100.132 19.1023 96.209 22.9284 94C26.227 92.0956 29.9008 92.0884 31.8249 93.8076V56.2266L31.3903 56.793L25.4997 52.2617L19.609 56.793L18.3903 55.207L23.859 51L18.3903 46.793L19.609 45.207L25.4997 49.7383L31.3903 45.207L31.8249 45.7725V25H31.8239V20H108.131V84.6279ZM52.1393 51L56.8298 54.6074V47.3916L52.1393 51ZM77.1393 51L81.8298 54.6074V47.3916L77.1393 51ZM102.139 51L106.83 54.6074V47.3916L102.139 51ZM27.1393 51L31.8249 54.6035V47.3955L27.1393 51Z"/>
+  </symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path fill="currentColor" d="M8 5.5v13a1 1 0 0 0 1.5.86l10.6-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></symbol>
+  <symbol id="i-stop" viewBox="0 0 24 24"><rect fill="currentColor" x="6.5" y="6.5" width="11" height="11" rx="1.5"/></symbol>
+  <symbol id="i-left" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M19 12H5m6-6-6 6 6 6"/></symbol>
+  <symbol id="i-right" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 20h14"/></symbol>
+  <symbol id="i-minus" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M6 12h12"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M6 12h12M12 6v12"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M15.5 8.5V6a1.5 1.5 0 0 0-1.5-1.5H6A1.5 1.5 0 0 0 4.5 6v8A1.5 1.5 0 0 0 6 15.5h2.5"/></g></symbol>
+  <symbol id="i-mic" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="9" y="3.5" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v2.5"/></g></symbol>
+  <symbol id="i-github" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2.5a9.5 9.5 0 0 0-3 18.5c.47.09.65-.2.65-.46v-1.6c-2.64.57-3.2-1.27-3.2-1.27-.43-1.1-1.05-1.39-1.05-1.39-.86-.59.07-.58.07-.58.95.07 1.45.98 1.45.98.85 1.45 2.22 1.03 2.76.79.09-.61.33-1.03.6-1.27-2.1-.24-4.31-1.05-4.31-4.68 0-1.03.37-1.88.98-2.54-.1-.24-.42-1.2.09-2.5 0 0 .8-.26 2.6.97a9 9 0 0 1 4.74 0c1.8-1.23 2.6-.97 2.6-.97.51 1.3.19 2.26.09 2.5.61.66.98 1.51.98 2.54 0 3.64-2.22 4.44-4.33 4.67.34.3.64.88.64 1.77v2.63c0 .26.18.56.66.46A9.5 9.5 0 0 0 12 2.5z"/></symbol>
+</svg>
+
+<header class="bar" id="top">
+  <div class="bar-in">
+    <a class="brand" href="#top"><svg class="mark" aria-hidden="true"><use href="#i-mark"/></svg><span>KitNote</span></a>
+    <nav class="tabs" aria-label="Sections">
+      <a href="#grid" data-ko="스텝 그리드">Step grid</a>
+      <a href="#patterns" data-ko="패턴 라이브러리">Pattern library</a>
+      <a href="#audio" data-ko="녹음 → 악보">Audio → chart</a>
+      <a href="#score" data-ko="조판">Engraving</a>
+      <a href="#ai">AI</a>
+    </nav>
+    <div class="bar-end">
+      <button class="btn grey sm" id="lang" type="button" lang="ko">한국어</button>
+      <a class="icon-link" href="https://github.com/hs-hui/KitNote" aria-label="KitNote on GitHub"><svg aria-hidden="true"><use href="#i-github"/></svg></a>
+      <a class="btn ink sm" href="#download" data-ko="다운로드">Download</a>
+    </div>
+  </div>
+</header>
+
+<main>
+<!-- ============================================================ the step grid -->
+<section class="hero" id="grid">
+  <div class="wrap hero-in">
+    <div class="hero-copy">
+      <h1><span data-ko="드럼 악보.">Drum notation.</span><br><em data-ko="드럼만 압니다.">Nothing else.</em></h1>
+      <p class="lede" data-ko="KitNote는 드럼 키트만 아는 무료 악보 편집기입니다.">KitNote is a free notation editor that only knows the drum kit.</p>
+      <div class="cta">
+        <a class="btn ink lg" id="dl-main" href="https://github.com/hs-hui/KitNote/releases/latest"><svg aria-hidden="true"><use href="#i-down"/></svg><span id="dl-main-label" data-ko="다운로드">Download</span></a>
+        <a class="btn grey lg" id="dl-alt" href="#download" data-ko="다른 플랫폼">Other platforms</a>
+      </div>
+      <p class="meta"><span id="ver">1.0.0</span> · <span data-ko="무료 오픈소스 (GPL-3.0)">Free and open source (GPL-3.0)</span> · Windows · macOS</p>
+    </div>
+
+    <div class="popup grid-pop" id="machine">
+      <div class="pop-head">
+        <h2 class="pop-title"><span data-ko="스텝 그리드">Step grid</span> · <span data-ko="마디">Measure</span> <span id="meas">1</span></h2>
+        <div class="pop-tools">
+          <button class="ico" id="m-prev" type="button" aria-label="Previous measure"><svg><use href="#i-left"/></svg></button>
+          <button class="ico" id="m-next" type="button" aria-label="Next measure"><svg><use href="#i-right"/></svg></button>
+        </div>
+      </div>
+      <div class="pop-help">
+        <p data-ko="클릭: 스트로크 넣기/빼기. 오른쪽 클릭: 악센트 → 고스트 노트 → 보통.">Click: add or remove a stroke. Right-click: accent → ghost note → normal.</p>
+        <button class="btn grey xs" id="copy-next" type="button" data-ko="다음 마디에 복사">Copy to next measure</button>
+        <button class="btn grey xs" id="clear" type="button" data-ko="지우기">Clear</button>
+      </div>
+      <div class="grid" id="grid-cells" role="grid" aria-label="Step grid"></div>
+      <div class="pop-foot">
+        <button class="play" id="play" type="button" aria-label="Play"><svg class="p"><use href="#i-play"/></svg><svg class="s"><use href="#i-stop"/></svg></button>
+        <div class="tempo" role="group" aria-label="Tempo">
+          <button class="ico sm" id="t-down" type="button" aria-label="Slower"><svg><use href="#i-minus"/></svg></button>
+          <output id="bpm">112</output><span class="unit">BPM</span>
+          <button class="ico sm" id="t-up" type="button" aria-label="Faster"><svg><use href="#i-plus"/></svg></button>
+        </div>
+        <div class="chips" id="presets" aria-label="Grooves"></div>
+      </div>
+      <div class="tabline">
+        <pre id="tab" aria-label="Drum tab"></pre>
+        <button class="btn grey xs" id="copy-tab" type="button"><svg aria-hidden="true"><use href="#i-copy"/></svg><span data-ko="탭 복사">Copy tab</span></button>
+      </div>
+    </div>
+  </div>
+  <p class="wrap hero-note" data-ko="복사한 탭을 KitNote에 붙여넣으면 그대로 악보가 됩니다.">Paste the copied tab into KitNote and it becomes notation.</p>
+</section>
+
+<!-- ============================================================ the pattern library, and every other feature as one of its tabs -->
+<section class="sec" id="patterns">
+  <div class="wrap">
+    <div class="popup lib" id="library">
+      <div class="lib-head">
+        <h2 data-ko="패턴 라이브러리">Pattern library</h2>
+        <div class="seg" role="tablist" id="lib-tabs" aria-label="Pattern library">
+          <button role="tab" type="button" id="tab-groove" data-cat="groove" aria-selected="true" aria-controls="lib-cards" data-ko="그루브">Grooves</button>
+          <button role="tab" type="button" id="tab-fill" data-cat="fill" aria-selected="false" aria-controls="lib-cards" data-ko="필인">Fills</button>
+          <button role="tab" type="button" id="tab-rudiment" data-cat="rudiment" aria-selected="false" aria-controls="lib-cards" data-ko="루디먼트">Rudiments</button>
+          <span class="seg-rule" aria-hidden="true"></span>
+          <button role="tab" type="button" id="tab-audio" data-cat="audio" aria-selected="false" aria-controls="audio" data-ko="녹음 → 악보">Audio → chart</button>
+          <button role="tab" type="button" id="tab-score" data-cat="score" aria-selected="false" aria-controls="score" data-ko="조판">Engraving</button>
+          <button role="tab" type="button" id="tab-ai" data-cat="ai" aria-selected="false" aria-controls="ai">AI</button>
+        </div>
+      </div>
+
+      <div class="lib-patterns" id="lib-cards-wrap">
+        <p class="lib-sub" data-ko="카드를 누르면 들려줍니다. KitNote에서는 선택한 마디에 그 패턴이 적힙니다.">Click a card to hear it. In KitNote, the pattern is written into the measures you selected.</p>
+        <div class="cards" id="lib-cards" role="tabpanel"></div>
+      </div>
+
+      <div class="panel" id="audio" role="tabpanel" aria-labelledby="tab-audio">
+        <div class="panel-copy">
+          <h3 data-ko="녹음 파일을 드럼 악보로.">From a recording to a drum chart.</h3>
+          <p data-ko="곡을 KitNote 창에 끌어다 놓으면 드럼을 분리하고, 박자와 마디를 찾고, KitNote 자체 드럼 모델이 타격을 적습니다.">Drop a song on the KitNote window. It separates the drums, finds the beat and the measures, and KitNote's own drum model writes the strokes.</p>
+          <ul class="facts">
+            <li data-ko="열린·닫힌 하이햇">Open or closed hi-hat</li>
+            <li data-ko="크래시·라이드">Crash or ride</li>
+            <li data-ko="어느 탐인지">Which tom</li>
+            <li data-ko="고스트 노트">Ghost notes</li>
+            <li data-ko="박자표">Time signature</li>
+            <li data-ko="구간과 % 반복">Sections and % repeats</li>
+          </ul>
+          <p class="small" data-ko="결과는 고쳐 쓸 초안입니다. 오디오 엔진(약 1 GB)은 동의한 뒤에만 내려받습니다. 모델은 공개 라이선스 데이터로만 학습했습니다.">The result is a first draft to correct. The audio engine (about 1 GB) downloads only after you agree. The model learned from openly licensed data only.</p>
+        </div>
+        <div class="rec">
+          <div class="drop">
+            <button class="play sm" id="rec-play" type="button" aria-label="Play the recording"><svg class="p"><use href="#i-play"/></svg><svg class="s"><use href="#i-stop"/></svg></button>
+            <div class="drop-text"><b>demo-groove.mp3</b><span data-ko="0:08 · KitNote 데모 그루브">0:08 · a KitNote demo groove</span></div>
+            <svg class="mic" aria-hidden="true"><use href="#i-mic"/></svg>
+          </div>
+          <canvas id="wave" width="1120" height="150" aria-hidden="true"></canvas>
+          <div class="found" id="found" aria-label="Strokes found"></div>
+          <p class="rec-status" id="rec-status" data-ko="재생하면 타격이 마디에 적힙니다. (데모)">Play it and the strokes land in the measures. (Demo)</p>
+        </div>
+      </div>
+
+      <div class="panel" id="score" role="tabpanel" aria-labelledby="tab-score">
+        <figure class="page-canvas"><img src="assets/score-page.webp" width="1958" height="1990" alt="A drum score engraved by KitNote: Neon Run, with Intro, Verse, Chorus and Bridge sections"></figure>
+        <div class="panel-copy">
+          <h3 data-ko="출판 악보 같은 조판이 기본.">Charts that look published, by default.</h3>
+          <ul class="plain">
+            <li data-ko="한 줄에 네 마디">Four measures to a line</li>
+            <li data-ko="상자 친 구간 이름">Boxed section names</li>
+            <li data-ko="1·2·4마디 % 반복과 카운트">% repeats for 1, 2 and 4 measures, with counts</li>
+            <li data-ko="손발 쉼표 합치기">Merged rests for hands and feet</li>
+            <li data-ko="첫 마디 앞 드럼 키">A drum key before the first measure</li>
+          </ul>
+          <p class="small" data-ko="PDF, PNG, SVG, MIDI, MusicXML, MP3 · WAV · OGG · FLAC, 텍스트 탭으로 내보내기.">Export to PDF, PNG, SVG, MIDI, MusicXML, MP3 · WAV · OGG · FLAC and text tab.</p>
+        </div>
+      </div>
+
+      <div class="panel" id="ai" role="tabpanel" aria-labelledby="tab-ai">
+        <div class="panel-copy">
+          <h3 data-ko="AI에게 말로 시키세요.">Or just ask your AI.</h3>
+          <p data-ko="설정 → AI에서 한 번 누르면 KitNote의 로컬 MCP 서버가 연결됩니다. 그다음엔 말로 요청하면 AI가 악보를 만들고 고치고 내보냅니다.">One click in Preferences → AI connects KitNote's local MCP server. Then ask in plain words and the AI writes, edits and exports the chart.</p>
+          <ul class="pills"><li>Claude Code</li><li>Codex</li><li>Claude Desktop</li><li>Cursor</li><li>Gemini CLI</li></ul>
+        </div>
+        <div class="term" aria-label="A demo of an AI tool using KitNote">
+          <div class="term-head"><span class="dots"><i></i><i></i><i></i></span><span>Claude Code</span><span class="demo" data-ko="데모">Demo</span></div>
+          <div class="term-body">
+            <p class="say"><span class="gt">&gt;</span> <span id="typed"></span><span class="caret" aria-hidden="true"></span></p>
+            <ol class="calls" id="calls"></ol>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ download -->
+<section class="sec" id="download">
+  <div class="wrap">
+    <div class="popup dl">
+      <div class="dl-head">
+        <h2><span data-ko="KitNote 다운로드">Download KitNote</span> <span class="ver" id="ver2">1.0.0</span></h2>
+        <p data-ko="무료. 계정 필요 없음.">Free. No account.</p>
+      </div>
+      <ul class="dl-list">
+        <li class="dl-row" data-os="win">
+          <div class="dl-what"><b>Windows</b><span data-ko="설치 프로그램 · Windows 10/11 64비트 · 관리자 권한 없이 설치">Installer · Windows 10/11, 64-bit · no admin rights</span></div>
+          <code id="f-exe">KitNote-1.0.0-win64-setup.exe</code>
+          <a class="btn ink" id="a-exe" href="https://github.com/hs-hui/KitNote/releases/latest"><svg aria-hidden="true"><use href="#i-down"/></svg><span data-ko="다운로드">Download</span></a>
+        </li>
+        <li class="dl-row" data-os="mac">
+          <div class="dl-what"><b>macOS</b><span data-ko="디스크 이미지 · macOS 14.4 이상 · Apple silicon과 Intel">Disk image · macOS 14.4 or later · Apple silicon and Intel</span></div>
+          <code id="f-dmg">KitNote-1.0.0-macos-universal.dmg</code>
+          <a class="btn ink" id="a-dmg" href="https://github.com/hs-hui/KitNote/releases/latest"><svg aria-hidden="true"><use href="#i-down"/></svg><span data-ko="다운로드">Download</span></a>
+        </li>
+        <li class="dl-row" data-os="zip">
+          <div class="dl-what"><b data-ko="Windows (포터블)">Windows (portable)</b><span data-ko="zip · 풀고 bin\KitNote.exe 실행">zip · unpack and run bin\KitNote.exe</span></div>
+          <code id="f-zip">KitNote-1.0.0-win64.zip</code>
+          <a class="btn grey" id="a-zip" href="https://github.com/hs-hui/KitNote/releases/latest"><svg aria-hidden="true"><use href="#i-down"/></svg><span data-ko="다운로드">Download</span></a>
+        </li>
+      </ul>
+      <div class="dl-notes">
+        <p data-ko="<b>Windows:</b> 아직 코드 서명이 없어 처음 실행할 때 SmartScreen 경고가 나옵니다. ‘추가 정보’ → ‘실행’.">
+          <b>Windows:</b> not code-signed yet, so the first start shows a SmartScreen warning. Choose <i>More info</i> → <i>Run anyway</i>.</p>
+        <p data-ko="<b>macOS:</b> 아직 공증 전이라 첫 실행이 막히면 시스템 설정 → 개인정보 보호 및 보안에서 ‘그래도 열기’.">
+          <b>macOS:</b> not notarized yet. If the first start is blocked, open System Settings → Privacy &amp; Security and click <i>Open Anyway</i>.</p>
+        <p class="links"><a id="sums" href="https://github.com/hs-hui/KitNote/releases/latest" data-ko="SHA256 체크섬">SHA256 checksums</a><a href="https://github.com/hs-hui/KitNote/releases" data-ko="모든 릴리즈">All releases</a><a href="https://github.com/hs-hui/KitNote" data-ko="소스 코드">Source code</a></p>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="foot">
+  <div class="wrap foot-in">
+    <a class="brand" href="#top"><svg class="mark" aria-hidden="true"><use href="#i-mark"/></svg><span>KitNote</span></a>
+    <nav class="foot-links" aria-label="More">
+      <a id="guide" href="https://github.com/hs-hui/KitNote/blob/main/docs/kitnote/user-guide.en.md" data-ko="사용 설명서">User guide</a>
+      <a href="https://github.com/hs-hui/KitNote/issues" data-ko="문제 신고">Report a problem</a>
+      <a href="https://github.com/hs-hui/KitNote/blob/main/THIRD_PARTY_NOTICES.md" data-ko="제3자 고지">Third-party notices</a>
+      <a href="assets/drums/LICENSE-MS-Basic.md" data-ko="드럼 소리: MS Basic (MIT)">Drum sounds: MS Basic (MIT)</a>
+      <a href="https://github.com/hs-hui/KitNote/blob/main/LICENSE.txt">GPL-3.0</a>
+    </nav>
+    <p class="legal" data-ko="KitNote는 MuseScore Studio 4.7.5를 바탕으로 한 독립 수정판입니다. MuseScore는 MuseScore Limited의 상표이며, KitNote는 MuseScore Limited나 Muse Group과 관계가 없고 그들의 보증을 받지 않았습니다.">KitNote is an independent modification of MuseScore Studio 4.7.5. MuseScore is a trademark of MuseScore Limited; KitNote is not affiliated with or endorsed by MuseScore Limited or Muse Group.</p>
+  </div>
+</footer>
+
+<script src="main.js"></script>
+</body>
+</html>
