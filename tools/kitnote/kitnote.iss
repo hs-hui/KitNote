@@ -62,11 +62,21 @@ Name: "fileassoc"; Description: "{cm:AssocFileExtension,KitNote,.kitnote}"; Grou
 ; (install.ps1 and register_filetype.ps1 belong to the zip, which is installed without this program)
 Source: "{#SourceDir}\*"; DestDir: "{app}"; Excludes: "install.ps1,register_filetype.ps1"; Flags: ignoreversion recursesubdirs createallsubdirs
 
+[InstallDelete]
+; what an installation made from the zip with install.ps1 left in the same folder
+Type: files; Name: "{app}\install.ps1"
+Type: files; Name: "{app}\register_filetype.ps1"
+
 [Icons]
 Name: "{autoprograms}\KitNote"; Filename: "{app}\bin\KitNote.exe"; WorkingDir: "{app}\bin"; Comment: "KitNote drum notation editor"
 Name: "{autodesktop}\KitNote"; Filename: "{app}\bin\KitNote.exe"; WorkingDir: "{app}\bin"; Comment: "KitNote drum notation editor"; Tasks: desktopicon
 
 [Registry]
+; An installation made from the zip with install.ps1 is replaced by this one: its "Installed apps" entry goes (its
+; uninstall would delete this program), and, for an installation for all users, its per-user association, which
+; would otherwise go on opening .kitnote files with the old copy.
+Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Uninstall\KitNote"; ValueType: none; Flags: deletekey dontcreatekey
+Root: HKCU; Subkey: "Software\Classes\KitNote.Score"; ValueType: none; Flags: deletekey dontcreatekey; Check: IsAdminInstallMode
 Root: HKA; Subkey: "Software\Classes\.kitnote"; ValueType: string; ValueName: ""; ValueData: "KitNote.Score"; Flags: uninsdeletevalue; Tasks: fileassoc
 Root: HKA; Subkey: "Software\Classes\.kitnote\OpenWithProgids"; ValueType: string; ValueName: "KitNote.Score"; ValueData: ""; Flags: uninsdeletevalue; Tasks: fileassoc
 Root: HKA; Subkey: "Software\Classes\KitNote.Score"; ValueType: string; ValueName: ""; ValueData: "KitNote score"; Flags: uninsdeletekey; Tasks: fileassoc

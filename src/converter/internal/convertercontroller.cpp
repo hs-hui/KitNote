@@ -348,6 +348,10 @@ static QByteArray kitNoteScoreSummary(const INotationPtr& notation)
 //!   (the recording's path is kept relative to the score written, or to KITNOTE_APPLY_SCORE: where the
 //!   caller puts the score afterwards)
 //! (The old name of the variable, KITNOTE_TEST_APPLY, is read too.)
+//! The most measures the commands may make a score have (an AI tool asking for a billion would keep
+//! KitNote busy for good)
+static constexpr int KITNOTE_MAX_MEASURES = 2000;
+
 static void applyKitNoteTestCommands(const INotationPtr& notation, const kfw::io::path_t& in, const kfw::io::path_t& out)
 {
     QStringList commandList;
@@ -355,7 +359,12 @@ static void applyKitNoteTestCommands(const INotationPtr& notation, const kfw::io
     if (!commandFile.isEmpty()) {
         QFile file(commandFile);
         if (file.open(QIODevice::ReadOnly)) {
-            commandList = QString::fromUtf8(file.readAll()).split(QLatin1Char('\n'), Qt::SkipEmptyParts);
+            QString text = QString::fromUtf8(file.readAll());
+            // a file written by Windows PowerShell 5.1 begins with a byte order mark: not part of the first command
+            if (text.startsWith(QChar(0xFEFF))) {
+                text.remove(0, 1);
+            }
+            commandList = text.split(QLatin1Char('\n'), Qt::SkipEmptyParts);
         }
     }
     QString commands = qEnvironmentVariable("KITNOTE_APPLY");
@@ -432,6 +441,10 @@ static void applyKitNoteTestCommands(const INotationPtr& notation, const kfw::io
             const int last = range.contains(QLatin1Char('-')) ? range.section(QLatin1Char('-'), 1, 1).toInt() : first;
             if (first < 1 || last < first) {
                 problems << "a range of measures goes from a first to a later one: @" + range;
+                continue;
+            }
+            if (last > KITNOTE_MAX_MEASURES) {
+                problems << QString("a score has at most %1 measures: @%2").arg(KITNOTE_MAX_MEASURES).arg(range);
                 continue;
             }
             // writing past the end: the score gets the measures it needs
@@ -578,8 +591,8 @@ static void applyKitNoteTestCommands(const INotationPtr& notation, const kfw::io
         } else if (command.startsWith(QLatin1String("measures:"))) {
             // as many measures as asked for: added at the end, or taken away from the end
             const int wanted = command.mid(9).toInt();
-            if (wanted < 1) {
-                problems << "measures: needs a number from 1";
+            if (wanted < 1 || wanted > KITNOTE_MAX_MEASURES) {
+                problems << QString("measures: needs a number from 1 to %1").arg(KITNOTE_MAX_MEASURES);
                 continue;
             }
             int count = 0;
@@ -691,9 +704,16 @@ static void applyKitNoteTestCommands(const INotationPtr& notation, const kfw::io
             }
         } else if (command.startsWith(QLatin1String("spatium:"))) {
             // (Format > Staff size does this through the style)
+            // the staff space in millimetres (1.75 by default): a number in a range a page can hold
+            bool ok = false;
+            const double millimetres = command.mid(8).trimmed().toDouble(&ok);
+            if (!ok || millimetres < 0.5 || millimetres > 10) {
+                problems << "spatium: needs a staff space in millimetres from 0.5 to 10: " + command;
+                continue;
+            }
             interaction->clearSelection();
             notation->undoStack()->prepareChanges(kfw::TranslatableString("undoableAction", "Change staff size"));
-            notation->style()->setStyleValue(kn::engraving::Sid::spatium, command.mid(8).toDouble() * kn::engraving::DPMM);
+            notation->style()->setStyleValue(kn::engraving::Sid::spatium, millimetres * kn::engraving::DPMM);
             notation->undoStack()->commitChanges();
             continue;
         } else if (command.startsWith(QLatin1String("tempo:"))) {

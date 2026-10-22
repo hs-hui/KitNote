@@ -168,6 +168,8 @@ jobs:
         name: ${{ env.UPLOAD_ARTIFACT_NAME }}
         # Only the disk image: release.yml requires exactly one .dmg in this artifact.
         path: ./build.artifacts/${{ steps.names.outputs.dmg_name }}
+        # a wrong name or a missing disk image fails the build here, not only the release later
+        if-no-files-found: error
 
     - name: Prepare ccache files for saving
       id: prepare-save-ccache

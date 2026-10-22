@@ -89,7 +89,8 @@ fi
 # uv of a known release (0.13.0, as on Windows), checked against the SHA-256 published with it
 UV_URL="https://github.com/astral-sh/uv/releases/download/0.13.0/uv-$UV_TARGET.tar.gz"
 
-if [ ! -f "$UV" ]; then
+# (a uv left half unpacked by an installation that was stopped is downloaded again)
+if [ ! -f "$UV" ] || ! "$UV" --version >/dev/null 2>&1; then
     say 3 "downloading uv (the Python installer)"
     TAR="$ROOT/uv.tar.gz"
     if ! curl -fsSL --proto '=https' --tlsv1.2 -o "$TAR" "$UV_URL"; then
@@ -133,10 +134,13 @@ if [ "$INTEL" = 1 ]; then
     TORCH_SPEC="torch==2.2.2"
     TORCHAUDIO_SPEC="torchaudio==2.2.2"
     NUMPY_SPEC="numpy<2"
+    # rotary-embedding-torch 0.9 needs torch 2.4 or later; 0.8.6 (torch 2.0 or later) gives Beat This! the same beats
+    ROTARY_SPEC="rotary-embedding-torch==0.8.6"
 else
     TORCH_SPEC="torch==2.5.1"
     TORCHAUDIO_SPEC="torchaudio==2.5.1"
     NUMPY_SPEC="numpy<2.3"
+    ROTARY_SPEC="rotary-embedding-torch==0.9.1"
 fi
 
 # (on a Mac the PyPI wheels of PyTorch are the processor's build - there is no CUDA index to choose)
@@ -152,7 +156,7 @@ run "The separation model could not be downloaded" "$PYTHON" -c "from demucs.pre
 # engine 2: the beat model (KitNote's drum model comes with KitNote, in its Resources folder)
 say 75 "installing the beat model"
 run "Beat This! could not be installed" "$UV" pip install --python "$PYTHON" "beat-this==1.1.0" "einops==0.8.2" \
-    "soxr==1.1.0" "rotary-embedding-torch==0.9.1" tqdm
+    "soxr==1.1.0" "$ROTARY_SPEC" tqdm
 say 90 "downloading the beat model (Beat This!, about 80 MB)"
 run "The beat model could not be downloaded" "$PYTHON" -c "from beat_this.inference import load_model; load_model('final0', 'cpu')"
 

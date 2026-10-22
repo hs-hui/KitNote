@@ -17,10 +17,22 @@ $extensionKey = Join-Path $ClassesRoot '.kitnote'
 $progIdKey = Join-Path $ClassesRoot $progId
 
 if ($Remove) {
-    foreach ($key in $extensionKey, $progIdKey) {
-        if (Test-Path -LiteralPath $key) {
-            Remove-Item -LiteralPath $key -Recurse -Force
+    # only what this script wrote: an "Open with" list of other programs, or another program chosen for
+    # .kitnote, stays
+    if (Test-Path -LiteralPath $extensionKey) {
+        if ((Get-ItemProperty -LiteralPath $extensionKey).'(default)' -eq $progId) {
+            # (the default value: Remove-ItemProperty cannot name it)
+            $writable = (Get-Item -LiteralPath $extensionKey).OpenSubKey('', $true)
+            $writable.DeleteValue('', $false)
+            $writable.Close()
         }
+        $key = Get-Item -LiteralPath $extensionKey
+        if (-not $key.Property -and -not $key.SubKeyCount) {
+            Remove-Item -LiteralPath $extensionKey -Force
+        }
+    }
+    if (Test-Path -LiteralPath $progIdKey) {
+        Remove-Item -LiteralPath $progIdKey -Recurse -Force
     }
     Write-Host 'Removed the .kitnote file association.'
     exit 0

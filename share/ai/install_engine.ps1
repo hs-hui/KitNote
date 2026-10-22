@@ -46,7 +46,17 @@ $env:TORCH_HOME = Join-Path $Root "torch"
 $uvUrl = "https://github.com/astral-sh/uv/releases/download/0.13.0/uv-x86_64-pc-windows-msvc.zip"
 $uvSha256 = "088962f9e7b7bd9ea740c04c650b2a21c8928c345bd99ac24350dc924dba656c"
 
-if (-not (Test-Path $uv)) {
+# a uv left half unpacked by an installation that was stopped is downloaded again
+$uvWorks = $false
+if (Test-Path $uv) {
+    try {
+        & $uv --version *> $null
+        $uvWorks = ($LASTEXITCODE -eq 0)
+    } catch {
+        $uvWorks = $false
+    }
+}
+if (-not $uvWorks) {
     Say 3 "downloading uv (the Python installer)"
     $zip = Join-Path $Root "uv.zip"
     try {
@@ -71,7 +81,8 @@ if (-not (Test-Path $python)) {
     Say 10 "installing Python 3.11"
     Run "Python could not be installed" $uv @("python", "install", "3.11")
     # a Python of uv's own, in this folder: not one the user may uninstall
-    Run "Python could not be set up" $uv @("venv", "--managed-python", "--python", "3.11", $venv)
+    # (--clear: an installation stopped after the folder was made would otherwise fail here at every try)
+    Run "Python could not be set up" $uv @("venv", "--clear", "--managed-python", "--python", "3.11", $venv)
 }
 
 Say 15 "installing PyTorch (about 200 MB)"

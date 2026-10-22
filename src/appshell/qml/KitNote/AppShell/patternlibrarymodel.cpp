@@ -80,11 +80,18 @@ const std::vector<std::vector<LibraryPattern> > LIBRARY {
 
 //! [ { "name": ..., "tab": "HH|x-x-x-x-x-x-x-x-|\nSD|...|\n" } ]
 static const kfw::Settings::Key USER_PATTERNS_KEY("appshell", "ui/kitnote/userPatterns");
+//! what the setting held when it could not be read, kept before the first pattern is saved over it
+static const kfw::Settings::Key USER_PATTERNS_BACKUP_KEY("appshell", "ui/kitnote/userPatternsUnreadable");
 
-static QJsonArray readUserPatterns()
+//! the patterns saved before; "readable" false when the setting holds something that is not a list of them
+static QJsonArray readUserPatterns(bool* readable = nullptr)
 {
     const std::string json = kfw::settings()->value(USER_PATTERNS_KEY).toString();
-    return QJsonDocument::fromJson(QByteArray::fromStdString(json)).array();
+    const QJsonDocument document = QJsonDocument::fromJson(QByteArray::fromStdString(json));
+    if (readable) {
+        *readable = json.empty() || document.isArray();
+    }
+    return document.array();
 }
 
 static void writeUserPatterns(const QJsonArray& patterns)
@@ -122,7 +129,8 @@ static QVariantMap userPatternItem(const QString& name, const QString& tab)
 
         QVariantList states;
         for (const QChar& sign : line.mid(bar + 1, end - bar - 1)) {
-            states << (sign == QLatin1Char('-') ? 0 : sign.isUpper() ? 2 : 1);
+            // as the library's previews: 0 nothing, 1 a stroke, 2 an accent, 3 a ghost note
+            states << (sign == QLatin1Char('-') ? 0 : sign.isUpper() ? 2 : sign == QLatin1Char('g') ? 3 : 1);
         }
         steps = static_cast<int>(states.size());
 
@@ -162,7 +170,12 @@ bool PatternLibraryModel::saveSelectedMeasure(const QString& name)
         return false;
     }
 
-    QJsonArray patterns = readUserPatterns();
+    bool readable = true;
+    QJsonArray patterns = readUserPatterns(&readable);
+    if (!readable) {
+        // the saved patterns cannot be read (a hand-edited settings file, say): kept aside, not written over
+        kfw::settings()->setSharedValue(USER_PATTERNS_BACKUP_KEY, kfw::settings()->value(USER_PATTERNS_KEY));
+    }
 
     QString title = name.trimmed();
     if (title.isEmpty()) {

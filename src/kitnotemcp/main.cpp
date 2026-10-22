@@ -52,6 +52,8 @@
 
 namespace {
 const char* VERSION = "1.0.0";
+// the most measures a score may have (KitNote's converter refuses more too)
+constexpr int MAX_MEASURES = 2000;
 
 QString appDir()
 {
@@ -132,6 +134,23 @@ Result fail(const QString& text)
     return { false, text };
 }
 
+//! Stops a process and everything it started: the engine's installer and Python start programs of their own
+//! (uv, pip, Python), which would otherwise go on writing into the engine's folder after a time-out.
+void killTree(QProcess& process)
+{
+    const qint64 pid = process.processId();
+    if (pid > 0) {
+#ifdef Q_OS_WIN
+        QProcess::execute("taskkill", { "/PID", QString::number(pid), "/T", "/F" });
+#else
+        QProcess::execute("/bin/sh", { "-c", "tree() { for child in $(pgrep -P \"$1\"); do tree \"$child\"; done; kill -9 \"$1\" 2>/dev/null; }; tree "
+                                              + QString::number(pid) });
+#endif
+    }
+    process.kill();
+    process.waitForFinished(5000);
+}
+
 //! Runs KitNote on a score: reads "in", applies the commands, writes "out" (the same file is fine).
 Result runKitNote(const QString& in, const QString& out, const QStringList& commands, const QStringList& extraArguments = {})
 {
@@ -204,7 +223,7 @@ Result runKitNote(const QString& in, const QString& out, const QStringList& comm
 
     // pictures come page by page (out-1.png ...), everything else as out.<suffix>
     const QFileInfoList staged = QDir(temp.path()).entryInfoList({ "out.*", "out-*" }, QDir::Files);
-    if (process.exitCode() != 0 || staged.isEmpty()) {
+    if (process.exitStatus() != QProcess::NormalExit || process.exitCode() != 0 || staged.isEmpty()) {
         return fail(QString("KitNote failed (exit code %1). %2").arg(process.exitCode())
                     .arg(QString::fromLocal8Bit(process.readAll()).right(800)));
     }
@@ -304,6 +323,13 @@ int number(const QJsonObject& args, const char* key, int fallback, bool* ok = nu
 QStringList propertyCommands(const QJsonObject& args, bool* ok, QString* problem)
 {
     QStringList commands;
+    for (const char* key : { "title", "composer", "recording" }) {
+        if (args.contains(key) && !args.value(key).isString()) {
+            *ok = false;
+            *problem = QString("%1 is a text").arg(key);
+            return commands;
+        }
+    }
     if (args.contains("title")) {
         commands << "title:" + args.value("title").toString();
     }
@@ -322,9 +348,9 @@ QStringList propertyCommands(const QJsonObject& args, bool* ok, QString* problem
     }
     if (args.contains("measures")) {
         const int measures = number(args, "measures", 0, ok);
-        if (measures < 1 || measures > 2000) {
+        if (measures < 1 || measures > MAX_MEASURES) {
             *ok = false;
-            *problem = "measures must be a number from 1 to 2000";
+            *problem = QString("measures must be a number from 1 to %1").arg(MAX_MEASURES);
         }
         commands << QString("measures:%1").arg(measures);
     }
@@ -577,7 +603,7 @@ Result audioEngine(const QJsonObject& args)
             }
         }
         if (clock.elapsed() > 60LL * 60 * 1000) {
-            process.kill();
+            killTree(process);
             return fail("the installation did not finish within an hour");
         }
     }
@@ -617,6 +643,10 @@ Result transcribe(const QJsonObject& args)
     }
     if (QFileInfo(output).isDir()) {
         return fail(output + " is a folder, not a score file");
+    }
+    if (!editable(output)) {
+        return fail("output_path must be a score: a .kitnote file (or .mscz / .mscx). export_score makes PDF, MIDI, "
+                    "MusicXML or audio of it afterwards");
     }
     if (QFileInfo::exists(output) && !args.value("overwrite").toBool()) {
         return fail(output + " exists already (overwrite: true replaces it)");
@@ -687,7 +717,7 @@ Result transcribe(const QJsonObject& args)
             }
         }
         if (clock.elapsed() > 60LL * 60 * 1000) {
-            process.kill();
+            killTree(process);
             return fail("the audio engine did not finish within an hour");
         }
     }
@@ -733,8 +763,15 @@ Result transcribe(const QJsonObject& args)
     // ... in time with it: every measure where it is in the recording (hidden tempo changes; an engine installed
     // before does not tell where the measures are)
     const QJsonArray times = result.value("measure_times").toArray();
+    bool timesForward = times.size() >= 2;
+    for (int i = 1; i < times.size() && timesForward; ++i) {
+        timesForward = times.at(i).isDouble() && times.at(i - 1).isDouble() && times.at(i).toDouble() > times.at(i - 1).toDouble();
+    }
     QString timing;
-    if (times.size() >= 2) {
+    if (times.size() >= 2 && !timesForward) {
+        timing = " The recording's measure timing could not be used (it does not go forward), so playback follows the tempo marks.";
+    }
+    if (timesForward) {
         const QString timesFile = temp.filePath("measure_times.json");
         QFile timesOut(timesFile);
         timesOut.open(QIODevice::WriteOnly);
@@ -761,7 +798,8 @@ Result transcribe(const QJsonObject& args)
 
 const char* TAB_HELP
     = "A drum tab: a line for every drum, a column for every step, '|' between measures. Labels: CC crash, RD ride, "
-      "HH hi-hat, T1 high tom, T2 mid tom, SD snare, FT floor tom, BD bass drum, HF hi-hat pedal. Signs: x or o a "
+      "HH hi-hat, T1 high tom, T2 mid tom, SD snare, FT floor tom, BD bass drum, HF hi-hat pedal, CB cowbell, TB tambourine, "
+      "CP hand clap, PC other percussion. Signs: x or o a "
       "stroke (on HH 'o' is the open hi-hat; on SD 'x' is a cross-stick), a capital (X, O) an accent, g a ghost note, "
       "- nothing. An accent belongs to the step: a capital on one hand line accents every hand stroke on that step (they "
       "are one chord), and read_score shows them all as capitals. 16 columns to a 4/4 measure are sixteenth notes, 8 eighth "
@@ -999,7 +1037,10 @@ Result callTool(const QString& name, const QJsonObject& args)
         }
         const QRegularExpression pageName("^" + QRegularExpression::escape(target.completeBaseName()) + "-\\d+\\."
                                           + QRegularExpression::escape(target.suffix()) + "$", QRegularExpression::CaseInsensitiveOption);
-        const bool pagesThere = !QDir(target.absolutePath()).entryList({ "*-*." + target.suffix() }, QDir::Files).filter(pageName).isEmpty();
+        // (only pictures come page by page: an existing my-song-2.pdf is another file, not a page of my-song.pdf)
+        const bool paged = QStringList { "png", "svg" }.contains(target.suffix().toLower());
+        const bool pagesThere = paged
+                                && !QDir(target.absolutePath()).entryList({ "*-*." + target.suffix() }, QDir::Files).filter(pageName).isEmpty();
         if ((target.exists() || pagesThere) && !args.value("overwrite").toBool()) {
             return fail(output + " exists already (overwrite: true replaces it)");
         }
@@ -1021,21 +1062,23 @@ Result callTool(const QString& name, const QJsonObject& args)
         static const QRegularExpression LINE(QStringLiteral("^\\s*([A-Za-z][A-Za-z0-9]{0,3})\\s*[|:]"));
         static const QStringList KNOWN { "BD", "B", "K", "KD", "KK", "BA", "B1", "BASS", "SD", "S", "SN", "SNR", "CS", "RS", "XS",
                                          "HH", "H", "HC", "CH", "OH", "HO", "HF", "FH", "PH", "RD", "R", "RC", "RI", "CC", "C", "CR",
-                                         "CY", "C1", "C2", "T1", "HT", "T", "TT", "ST", "T2", "MT", "T3", "FT", "LT", "F", "FL" };
+                                         "CY", "C1", "C2", "T1", "HT", "T", "TT", "ST", "T2", "MT", "T3", "FT", "LT", "F", "FL",
+                                         "CB", "COW", "TB", "TAMB", "CP", "CL", "CLAP", "PC", "PERC" };
         QStringList unknown;
         static const QRegularExpression CELLS(QStringLiteral("^\\s*[A-Za-z][A-Za-z0-9]{0,3}\\s*[|:][\\s|:\\-._xXoOgGfFbBdD#*@()?]+$"));
         for (const QString& line : args.value("tab").toString().split('\n')) {
             const QRegularExpressionMatch match = LINE.match(line);
-            // a line of words ("Note: open hi-hat") is no drum line; PC (other percussion) is passed over
+            // a line of words ("Note: open hi-hat") is no drum line
             if (match.hasMatch() && CELLS.match(line.trimmed()).hasMatch() && line.contains('-')
-                && !KNOWN.contains(match.captured(1).toUpper()) && match.captured(1).toUpper() != "PC"
+                && !KNOWN.contains(match.captured(1).toUpper())
                 && !unknown.contains(match.captured(1))) {
                 unknown << match.captured(1);
             }
         }
         if (!unknown.isEmpty()) {
             return fail("unknown drum label(s): " + unknown.join(", ") + ". Use CC (crash), RD (ride), HH (hi-hat), T1, T2 (toms), "
-                        "SD (snare), FT (floor tom), BD (bass drum), HF (hi-hat pedal).");
+                        "SD (snare), FT (floor tom), BD (bass drum), HF (hi-hat pedal), CB (cowbell), TB (tambourine), CP (hand "
+                        "clap), PC (other percussion).");
         }
         const QString tab = temp.filePath("tab.txt");
         QFile file(tab);
@@ -1046,8 +1089,8 @@ Result callTool(const QString& name, const QJsonObject& args)
         file.close();
         bool ok = true;
         const int start = number(args, "start_measure", 1, &ok);
-        if (!ok || start < 1) {
-            return fail("start_measure must be a number of a measure, from 1");
+        if (!ok || start < 1 || start > MAX_MEASURES) {
+            return fail(QString("start_measure must be a number of a measure, from 1 to %1").arg(MAX_MEASURES));
         }
         commands << QString("@%1 tabpaste:%2").arg(start).arg(tab);
     } else if (name == "fill_pattern" || name == "clear_measures") {
@@ -1056,8 +1099,16 @@ Result callTool(const QString& name, const QJsonObject& args)
             return fail("first_measure must be a number of a measure, from 1");
         }
         bool ok = true;
-        if (args.contains("last_measure") && number(args, "last_measure", 0, &ok) < number(args, "first_measure", 0, &ok)) {
+        const int first = number(args, "first_measure", 0, &ok);
+        const int last = args.contains("last_measure") ? number(args, "last_measure", 0, &ok) : first;
+        if (!ok) {
+            return fail("first_measure and last_measure must be numbers of measures");
+        }
+        if (last < first) {
             return fail("last_measure comes before first_measure");
+        }
+        if (last > MAX_MEASURES) {
+            return fail(QString("a score has at most %1 measures").arg(MAX_MEASURES));
         }
         static const QStringList PATTERN_NAMES { "rock-8", "rock-8-push", "rock-16", "quarter", "crash-rock-8", "ride-8", "half-time",
                                                  "four-floor", "disco", "motown", "bossa-nova", "reggae", "shuffle", "triplet-feel",
@@ -1070,8 +1121,9 @@ Result callTool(const QString& name, const QJsonObject& args)
         commands << measures + (name == "fill_pattern" ? "pattern:" + args.value("pattern").toString().trimmed().toLower() : QString("clear"));
     } else if (name == "add_section") {
         bool ok = true;
-        if (number(args, "measure", 0, &ok) < 1 || !ok) {
-            return fail("measure must be the number of a measure, from 1");
+        const int measure = number(args, "measure", 0, &ok);
+        if (!ok || measure < 1 || measure > MAX_MEASURES) {
+            return fail(QString("measure must be the number of a measure, from 1 to %1").arg(MAX_MEASURES));
         }
         if (args.value("name").toString().trimmed().isEmpty()) {
             return fail("name is missing (Intro, Verse, Chorus ...)");
@@ -1290,7 +1342,8 @@ int main(int argc, char** argv)
 
     std::string line;
     while (std::getline(std::cin, line)) {
-        if (line.empty() || line == "\r") {
+        // a line of nothing but blanks is not a message
+        if (QByteArray::fromStdString(line).trimmed().isEmpty()) {
             continue;
         }
 
@@ -1301,8 +1354,8 @@ int main(int argc, char** argv)
             continue;
         }
         if (!document.isObject() || (document.object().contains("id") && !document.object().contains("method"))) {
-            if (document.isObject() && document.object().contains("result")) {
-                continue;       // an answer to a request of ours: there are none
+            if (document.isObject() && (document.object().contains("result") || document.object().contains("error"))) {
+                continue;       // an answer to a request of ours (there are none): a response is never answered
             }
             replyError(document.isObject() ? document.object().value("id") : QJsonValue(), -32600, "invalid request");
             continue;

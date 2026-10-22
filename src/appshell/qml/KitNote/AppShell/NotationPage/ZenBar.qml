@@ -1761,7 +1761,9 @@ Item {
 
                                                         color: parent.modelData > 0 ? stepGrid.familyColors[tileRow.modelData.family]
                                                                                     : Qt.alpha(ui.theme.fontPrimaryColor, 0.09)
-                                                        opacity: parent.modelData === 1 && tile.modelData.sticking !== "" ? 0.6 : 1.0
+                                                        // a ghost note (3) pale, as in the step grid
+                                                        opacity: parent.modelData === 3 ? 0.35
+                                                                 : parent.modelData === 1 && tile.modelData.sticking !== "" ? 0.6 : 1.0
                                                     }
                                                 }
                                             }

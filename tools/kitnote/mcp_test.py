@@ -6,6 +6,8 @@ import struct
 import subprocess
 import sys
 import tempfile
+import time
+import wave
 import zipfile
 from pathlib import Path
 
@@ -210,6 +212,30 @@ def main():
     check("a section without a name is an error", error, text)
     error, text = client.call("export_score", path=str(score), output_path=str(folder / "x.xyz"))
     check("an export format KitNote does not write is named in the error", error and "pdf" in text, text)
+
+    # a measure number far past what a score holds is refused at once (KitNote would be busy adding measures)
+    started = time.time()
+    error, text = client.call("fill_pattern", path=str(score), pattern="rock-8", first_measure=1, last_measure=2000000000)
+    check("a range past 2000 measures is refused at once", error and "2000" in text and time.time() - started < 5, text)
+    error, text = client.call("edit_score", path=str(score), commands=["measures:999999999"])
+    check("edit_score with measures past 2000 is refused (by KitNote itself)", error and "2000" in text, text)
+    error, text = client.call("write_drum_tab", path=str(score), tab="HH|x-x-x-x-x-x-x-x-|", start_measure=5000)
+    check("a start measure past 2000 is refused", error and "2000" in text, text)
+    # transcription writes a score, nothing else
+    with wave.open(str(folder / "quiet.wav"), "wb") as quiet:
+        quiet.setnchannels(1)
+        quiet.setsampwidth(2)
+        quiet.setframerate(44100)
+        quiet.writeframes(bytes(44100 * 2))
+    error, text = client.call("transcribe_audio", audio_path=str(folder / "quiet.wav"), output_path=str(folder / "song.pdf"))
+    check("transcribe_audio into a PDF is refused", error and ".kitnote" in text, text)
+    # drums below the kit: their own lines, written and read back (the large kit has a cowbell)
+    large = folder / "ai_large.kitnote"
+    client.call("create_score", path=str(large), title="Large", tempo=100, measures=4, kit="large")
+    error, text = client.call("write_drum_tab", path=str(large),
+                              tab="CB|x---x---x---x---|\nSD|----o-------o---|\nBD|o-------o-------|", start_measure=2)
+    rows = json.loads(text[text.index("{"):]).get("drum_tab", "").splitlines() if not error else []
+    check("a cowbell line (CB) is written and read back as CB", not error and any(r.startswith("CB|") for r in rows), text)
 
     # rows of a tab that would put strokes in the wrong measures are refused, and the score stays as it was
     form = folder / "ai_form.kitnote"

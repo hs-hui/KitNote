@@ -30,6 +30,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QLocale>
+#include <QRegularExpression>
 #include <QSaveFile>
 #include <QStandardPaths>
 #include <QTemporaryDir>
@@ -252,6 +253,26 @@ QString findTool(const QString& name)
     return QString();
 }
 
+//! Claude Desktop's settings folder below "appData". The Microsoft Store build of Claude Desktop (an MSIX
+//! package) does not read %APPDATA%: its application data is redirected to the package's own folder,
+//! %LOCALAPPDATA%\Packages\Claude_<publisher>\LocalCache\Roaming. When that folder is there, it is the one.
+QString claudeDesktopFolder(const QString& appData)
+{
+#ifdef Q_OS_WIN
+    const QString localAppData = qEnvironmentVariableIsSet("KITNOTE_AI_HOME")
+                                 ? home() + "/AppData/Local"
+                                 : qEnvironmentVariable("LOCALAPPDATA", home() + "/AppData/Local");
+    const QDir packages(localAppData + "/Packages");
+    for (const QString& package : packages.entryList({ "Claude_*" }, QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name)) {
+        const QString folder = packages.filePath(package) + "/LocalCache/Roaming/Claude";
+        if (QFileInfo(folder).isDir()) {
+            return folder;
+        }
+    }
+#endif
+    return appData + "/Claude";
+}
+
 std::vector<Client> allClients()
 {
     // Claude Desktop keeps its settings in the roaming application data (%APPDATA%); on a Mac in
@@ -262,10 +283,11 @@ std::vector<Client> allClients()
     const QString appDataDefault = qEnvironmentVariable("APPDATA", QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation));
 #endif
     const QString appData = qEnvironmentVariableIsSet("KITNOTE_AI_HOME") ? home() + "/AppData/Roaming" : appDataDefault;
+    const QString claudeDesktop = claudeDesktopFolder(appData);
     return {
         { "claude-code", "Claude Code", home() + "/.claude.json", home() + "/.claude/skills/kitnote", home() + "/.claude", "claude" },
         { "codex", "Codex", home() + "/.codex/config.toml", home() + "/.codex/skills/kitnote", home() + "/.codex", "codex", true },
-        { "claude-desktop", "Claude Desktop", appData + "/Claude/claude_desktop_config.json", QString(), appData + "/Claude", "" },
+        { "claude-desktop", "Claude Desktop", claudeDesktop + "/claude_desktop_config.json", QString(), claudeDesktop, "" },
         { "cursor", "Cursor", home() + "/.cursor/mcp.json", QString(), home() + "/.cursor", "cursor" },
         // Gemini CLI: an extension of its own - the server and GEMINI.md (the skill) in one folder
         { "gemini", "Gemini CLI", home() + "/.gemini/extensions/kitnote/gemini-extension.json", home() + "/.gemini/extensions/kitnote",
@@ -422,8 +444,16 @@ bool setServer(const Client& client, const QString& serverPath, bool add)
     if (client.toml) {
         QByteArray text = tomlWithout(data);
         if (add) {
-            if (text.contains("[mcp_servers.kitnote]")) {
-                return false;       // the user has a "kitnote" server of their own: not a second table
+            // the user has a "kitnote" server of their own: not a second definition (Codex would refuse the
+            // whole file). TOML spells it [mcp_servers.kitnote], [mcp_servers."kitnote"], mcp_servers.kitnote.x = ...
+            // at the top, or kitnote = {...} in an inline mcp_servers table.
+            static const QRegularExpression OWN_SERVER(
+                QStringLiteral("^\\s*(\\[\\s*mcp_servers\\s*\\.\\s*[\"']?kitnote[\"']?\\s*[\\].]"
+                               "|mcp_servers\\s*\\.\\s*[\"']?kitnote[\"']?\\s*[.=]"
+                               "|mcp_servers\\s*=\\s*\\{.*\\b[\"']?kitnote[\"']?\\s*=)"),
+                QRegularExpression::MultilineOption);
+            if (OWN_SERVER.match(QString::fromUtf8(text)).hasMatch()) {
+                return false;
             }
             if (!text.isEmpty() && !text.endsWith('\n')) {
                 text += '\n';
@@ -794,7 +824,7 @@ void AudioToScoreModel::writeScore(const QString& resultJson)
     }
 
     const QString tabFile = m_temp->filePath("tab.txt");
-    writeFile(tabFile, tab.toUtf8());
+    bool filesWritten = writeFile(tabFile, tab.toUtf8());
     // one command to a line: a line break in the file name would make a command of the rest
     QString title = audio.completeBaseName();
     title.replace('\r', ' ').replace('\n', ' ');
@@ -803,11 +833,11 @@ void AudioToScoreModel::writeScore(const QString& resultJson)
     QByteArray timesCommand;
     if (result.value("measure_times").toArray().size() >= 2) {
         const QString timesFile = m_temp->filePath("measure_times.json");
-        writeFile(timesFile, QJsonDocument(result.value("measure_times").toArray()).toJson(QJsonDocument::Compact));
+        filesWritten &= writeFile(timesFile, QJsonDocument(result.value("measure_times").toArray()).toJson(QJsonDocument::Compact));
         timesCommand = "\nrecordingtimes:" + QDir::toNativeSeparators(timesFile).toUtf8();
     }
     const QString commandFile = m_temp->filePath("commands.txt");
-    writeFile(commandFile, QStringList {
+    filesWritten &= writeFile(commandFile, QStringList {
         "title:" + title,
         "timesig:" + result.value("time_signature").toString("4/4"),
         QString("measures:%1").arg(std::max(1, result.value("measures").toInt())),
@@ -816,6 +846,12 @@ void AudioToScoreModel::writeScore(const QString& resultJson)
     }.join('\n').toUtf8() + (m_repeatSigns ? QByteArray("\nrepeats") : QByteArray()) + sectionCommands(result, m_sections)
               // the song plays along with its score (the Mixer's "Recording"), in time with it
               + QByteArray("\nrecording:") + QDir::toNativeSeparators(m_audioPath).toUtf8() + timesCommand);
+    if (!filesWritten) {
+        // without its commands KitNote would write the empty drum kit template and call it done
+        m_status = kfw::qtrc("preferences/ai", "The score could not be written.");
+        emit changed();
+        return;
+    }
 
     m_writing = true;
     emit changed();
@@ -823,6 +859,10 @@ void AudioToScoreModel::writeScore(const QString& resultJson)
     auto* process = new QProcess(this);
     QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
     env.insert("KITNOTE_APPLY_FILE", QDir::toNativeSeparators(commandFile));
+    // what KitNote could not do with the commands (measures of the tab it could not write, say): told, not hidden
+    const QString reportFile = m_temp->filePath("report.txt");
+    QFile::remove(reportFile);
+    env.insert("KITNOTE_APPLY_REPORT", QDir::toNativeSeparators(reportFile));
     process->setProcessEnvironment(env);
     connect(process, &QProcess::errorOccurred, this, [this, process](QProcess::ProcessError error) {
         if (error == QProcess::FailedToStart) {
@@ -832,15 +872,19 @@ void AudioToScoreModel::writeScore(const QString& resultJson)
             emit changed();
         }
     });
-    connect(process, &QProcess::finished, this, [this, process, output](int exitCode, QProcess::ExitStatus) {
+    connect(process, &QProcess::finished, this, [this, process, output, reportFile](int exitCode, QProcess::ExitStatus exitStatus) {
         process->deleteLater();
         m_writing = false;
-        if (exitCode != 0 || !QFileInfo::exists(output)) {
+        if (exitStatus != QProcess::NormalExit || exitCode != 0 || !QFileInfo::exists(output)) {
             m_status = kfw::qtrc("preferences/ai", "The score could not be written.");
             emit changed();
             return;
         }
-        m_status = kfw::qtrc("preferences/ai", "Written: %1").arg(QDir::toNativeSeparators(output));
+        const QString problems = QString::fromUtf8(readFile(reportFile)).trimmed();
+        m_status = problems.isEmpty()
+                   ? kfw::qtrc("preferences/ai", "Written: %1").arg(QDir::toNativeSeparators(output))
+                   : kfw::qtrc("preferences/ai", "Written: %1. Not everything could be written: %2")
+                   .arg(QDir::toNativeSeparators(output), problems.left(600));
         emit changed();
         dispatcher()->dispatch("file-open", kfw::actions::ActionData::make_arg1<QUrl>(QUrl::fromLocalFile(output)));
         emit done();

@@ -45,6 +45,42 @@ function Remove-IfPresent([string]$path) {
     }
 }
 
+# KitNote installed with its setup program (KitNote-<version>-win64-setup.exe, Inno Setup): its "Installed apps"
+# entry, for the current user or for all users. The two installations would share a folder and an association.
+function Test-SetupInstall {
+    $setupKey = '{6C1E3B9A-6F4D-4E0B-9A57-3B2D8E1F4C21}_is1'
+    $roots = @($UninstallRoot)
+    # (all users' entries only for the real registry: a redirected -UninstallRoot is a trial run)
+    if ($UninstallRoot -eq 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall') {
+        $roots += 'HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall'
+    }
+    foreach ($root in $roots) {
+        if (Test-Path -LiteralPath (Join-Path $root $setupKey)) {
+            return $true
+        }
+    }
+    return $false
+}
+
+# Takes back the .kitnote association this script made, and nothing else: an "Open with" list of other
+# programs, or another program the user chose for .kitnote, stays.
+function Remove-KitNoteAssociation {
+    $extension = Join-Path $ClassesRoot '.kitnote'
+    if (Test-Path -LiteralPath $extension) {
+        if ((Get-ItemProperty -LiteralPath $extension).'(default)' -eq $progId) {
+            # (the default value: Remove-ItemProperty cannot name it)
+            $writable = (Get-Item -LiteralPath $extension).OpenSubKey('', $true)
+            $writable.DeleteValue('', $false)
+            $writable.Close()
+        }
+        $key = Get-Item -LiteralPath $extension
+        if (-not $key.Property -and -not $key.SubKeyCount) {
+            Remove-Item -LiteralPath $extension -Force
+        }
+    }
+    Remove-IfPresent (Join-Path $ClassesRoot $progId)
+}
+
 function Test-KitNoteRunsFrom([string]$folder) {
     $prefix = $folder + '\'
     [bool](Get-Process KitNote -ErrorAction SilentlyContinue |
@@ -93,8 +129,10 @@ if ($Uninstall) {
     Remove-KitNoteFrom $InstallDir
     Remove-IfPresent $startShortcut
     Remove-IfPresent $desktopShortcutPath
-    Remove-IfPresent (Join-Path $ClassesRoot '.kitnote')
-    Remove-IfPresent (Join-Path $ClassesRoot $progId)
+    # (an installation made with the setup program has the same association: it stays with it)
+    if (-not (Test-SetupInstall)) {
+        Remove-KitNoteAssociation
+    }
     Remove-IfPresent $uninstallKey
 
     Write-Host 'KitNote was removed. Your scores and settings were left in place.'
@@ -104,6 +142,12 @@ if ($Uninstall) {
 $source = Get-FullPath $PSScriptRoot
 if (-not (Test-Path -LiteralPath (Join-Path $source 'bin\KitNote.exe'))) {
     Write-Error "bin\KitNote.exe was not found next to this script ($source). Run it from the unpacked KitNote folder."
+    exit 1
+}
+
+if (Test-SetupInstall) {
+    Write-Error ('KitNote is installed with its setup program. Update it by running the new KitNote setup ' +
+                 '(KitNote-<version>-win64-setup.exe), or remove it under Settings > Apps > Installed apps first.')
     exit 1
 }
 

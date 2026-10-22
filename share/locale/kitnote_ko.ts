@@ -29620,6 +29620,11 @@ pickup measure</source>
         <translation>클립보드에 드럼 탭이 없습니다</translation>
     </message>
     <message>
+        <location filename="../../src/notation/internal/notationinteraction.cpp"/>
+        <source>This drum tab would go into the wrong measures</source>
+        <translation>이 드럼 탭은 마디가 어긋나게 들어갑니다</translation>
+    </message>
+    <message>
         <location filename="../../src/notation/internal/notationinteraction.cpp" line="9342"/>
         <source>Copy a text drum tab first - lines such as HH|x-x-x-x-x-x-x-x-| and SD|----o-------o---| - then choose this command again.</source>
         <translation>먼저 텍스트 드럼 탭(HH|x-x-x-x-x-x-x-x-|, SD|----o-------o---| 같은 줄)을 복사한 뒤 이 명령을 다시 실행하세요.</translation>
@@ -35789,6 +35794,11 @@ failed: %2</source>
         <location filename="../../src/preferences/qml/KitNote/Preferences/aipreferencesmodel.cpp" line="809"/>
         <source>Written: %1</source>
         <translation>저장했습니다: %1</translation>
+    </message>
+    <message>
+        <location filename="../../src/preferences/qml/KitNote/Preferences/aipreferencesmodel.cpp"/>
+        <source>Written: %1. Not everything could be written: %2</source>
+        <translation>저장했습니다: %1. 다만 일부는 적지 못했습니다: %2</translation>
     </message>
     <message>
         <location filename="../../src/preferences/qml/KitNote/Preferences/AudioToScoreDialog.qml" line="29"/>
