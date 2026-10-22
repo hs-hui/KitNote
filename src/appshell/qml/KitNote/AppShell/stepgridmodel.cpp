@@ -177,7 +177,10 @@ void StepGridModel::toggle(int pitch, int step)
         }
     }
 
-    if (!wasOn && before.valid && before.firstSegment && playbackController()) {
+    // (only when the step can be written: a measure that does not fit the grid, or a measure-repeat sign,
+    // is left as it is, so nothing is heard either)
+    const bool editable = before.valid && before.fitsGrid && !before.repeatSign && step >= 0 && step < before.stepCount;
+    if (!wasOn && editable && before.firstSegment && playbackController()) {
         playbackController()->playNotes({ NoteVal(pitch) }, before.staffIdx, before.firstSegment);
     }
 

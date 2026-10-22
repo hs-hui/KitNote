@@ -67,7 +67,8 @@ BD|o-------o-o-----|o-----o-o-------|
 ```
 
 - Labels: `CC` crash, `RD` ride, `HH` hi-hat (played with a stick), `T1` high tom, `T2` mid tom, `SD` snare,
-  `FT` floor tom, `BD` bass drum, `HF` hi-hat pedal (the foot: the jazz "chick" on 2 and 4 is `HF`, not `HH`).
+  `FT` floor tom, `BD` bass drum, `HF` hi-hat pedal (the foot: the jazz "chick" on 2 and 4 is `HF`, not `HH`),
+  `CB` cowbell, `TB` tambourine, `CP` hand clap, `PC` other percussion (when the kit has it).
 - Signs: `x` / `o` a stroke (on `HH`, `o` = open hi-hat; on `SD`, `x` = cross-stick), capital `X` / `O` an
   accent, `g` a ghost note, `-` nothing.
 - Every line of a row covers the same measures: write a silent measure as `----------------`, never

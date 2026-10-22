@@ -6500,7 +6500,9 @@ void NotationInteraction::replaceSelectedNotesWithSlashes()
 // KitNote: drum patterns -----------------------------------------------------
 namespace {
 enum class DrumRole {
-    Kick, Snare, CrossStick, HiHat, OpenHiHat, PedalHiHat, Ride, Crash, TomHigh, TomMid, TomFloor, RideBell
+    Kick, Snare, CrossStick, HiHat, OpenHiHat, PedalHiHat, Ride, Crash, TomHigh, TomMid, TomFloor, RideBell,
+    // drums of a drum tab's lines below the kit: CB, TB, CP, and PC for any other
+    Cowbell, Tambourine, Clap, Percussion
 };
 
 struct DrumHit {
@@ -6531,6 +6533,11 @@ int drumPitch(const Drumset* drumset, DrumRole role)
         { DrumRole::TomHigh, { 50, 48, 47 } },
         { DrumRole::TomMid, { 47, 45, 48, 43 } },
         { DrumRole::TomFloor, { 43, 41, 45 } },
+        { DrumRole::Cowbell, { 56 } },
+        { DrumRole::Tambourine, { 54 } },
+        { DrumRole::Clap, { 39 } },
+        // claves, wood blocks, splash, ... and the three above
+        { DrumRole::Percussion, { 75, 76, 77, 55, 56, 54, 39 } },
     };
 
     for (int pitch : CANDIDATES.at(role)) {
@@ -8073,8 +8080,14 @@ TabLine tabLine(int pitch)
         return { 7, "BD", 'o' };
     case 44:
         return { 8, "HF", 'x' };       // hi-hat with the foot
+    case 56:
+        return { 9, "CB", 'o' };       // cowbell
+    case 54:
+        return { 10, "TB", 'o' };      // tambourine
+    case 39:
+        return { 11, "CP", 'o' };      // hand clap
     default:
-        return { 9, "PC", 'o' };
+        return { 12, "PC", 'o' };
     }
 }
 
@@ -8160,7 +8173,8 @@ QString NotationInteraction::drumTabText(bool wholeScore) const
 QString NotationInteraction::drumTabOfMeasures(Measure* first, Measure* last, staff_idx_t staffIdx) const
 {
     static const std::map<int, const char*> LABELS {
-        { 0, "CC" }, { 1, "RD" }, { 2, "HH" }, { 3, "T1" }, { 4, "T2" }, { 5, "SD" }, { 6, "FT" }, { 7, "BD" }, { 8, "HF" }, { 9, "PC" }
+        { 0, "CC" }, { 1, "RD" }, { 2, "HH" }, { 3, "T1" }, { 4, "T2" }, { 5, "SD" }, { 6, "FT" }, { 7, "BD" }, { 8, "HF" },
+        { 9, "CB" }, { 10, "TB" }, { 11, "CP" }, { 12, "PC" }
     };
 
     if (!score() || !first || !last) {
@@ -8280,8 +8294,14 @@ QString NotationInteraction::selectedMeasureDrumTab() const
         return QString();
     }
 
-    // the first line: the length of the measure, so that the pattern goes only where it fits
-    const Fraction sig = measure->timesig();
+    // the first line: the length of the measure, so that the pattern goes only where it fits. A pickup or
+    // a shortened measure has a length of its own (1/4 in 4/4): that one, in the unit of its time signature.
+    Fraction sig = measure->timesig();
+    const Fraction actual = measure->ticks();
+    if (actual != sig) {
+        const Fraction count = (actual / Fraction(1, sig.denominator())).reduced();
+        sig = count.denominator() == 1 ? Fraction(count.numerator(), sig.denominator()) : actual.reduced();
+    }
     return QStringLiteral("@%1/%2\n").arg(sig.numerator()).arg(sig.denominator()) + text;
 }
 
@@ -8880,6 +8900,11 @@ bool tabLineRole(const QString& label, DrumRole& role)
         { "T2", DrumRole::TomMid }, { "MT", DrumRole::TomMid },
         { "T3", DrumRole::TomFloor }, { "FT", DrumRole::TomFloor }, { "LT", DrumRole::TomFloor }, { "F", DrumRole::TomFloor },
         { "FL", DrumRole::TomFloor },
+        // the lines drumTabText writes below the kit (and the usual spellings of them)
+        { "CB", DrumRole::Cowbell }, { "COW", DrumRole::Cowbell },
+        { "TB", DrumRole::Tambourine }, { "TAMB", DrumRole::Tambourine },
+        { "CP", DrumRole::Clap }, { "CL", DrumRole::Clap }, { "CLAP", DrumRole::Clap },
+        { "PC", DrumRole::Percussion }, { "PERC", DrumRole::Percussion },
     };
 
     const auto it = ROLES.find(label.toUpper());
@@ -9341,6 +9366,14 @@ void NotationInteraction::pasteDrumTab()
         interactive()->info(kfw::trc("notation", "There is no drum tab on the clipboard"),
                             kfw::trc("notation", "Copy a text drum tab first - lines such as HH|x-x-x-x-x-x-x-x-| and "
                                                   "SD|----o-------o---| - then choose this command again."));
+        return;
+    }
+    // a tab whose lines would land in the wrong measures (an empty line inside a row, a line with fewer
+    // measures than the others of its row) is not written: the same check as the command line's
+    const QString problem = drumTabProblem(text);
+    if (!problem.isEmpty()) {
+        interactive()->info(kfw::trc("notation", "This drum tab would go into the wrong measures"),
+                            problem.toStdString());
         return;
     }
 

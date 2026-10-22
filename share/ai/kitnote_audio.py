@@ -32,6 +32,8 @@ if os.path.isdir(os.path.join(_ENGINE_ROOT, "torch")):
 RATE = 44100
 HOP = 256                      # 5.8 ms
 FFT = 2048
+# a frame of the spectrogram (no padding at the start) is heard around its middle: frame f at f * HOP + FFT / 2
+FRAME_CENTRE = FFT / 2 / RATE  # 23 ms
 # Tuned on real recordings (a pop-rock song against a published chart of it):
 HAT_RISE = 3.0                 # dB a hi-hat jumps at least (an open one struck again while it rings: little)
 HAT_LEVEL = -20.0              # dB a hi-hat may be under the loudest highs of the song (a snare's rattle is louder)
@@ -144,9 +146,12 @@ def remove_hum(audio):
     window = RATE                                   # one second: a hertz apart
     if len(mono) < 4 * window:
         return audio, []
-    freqs, _, z = signal.stft(mono, fs=RATE, nperseg=window, noverlap=window // 2, boundary=None, padded=False)
+    # (only the lowest thousand hertz are looked at: the transform is kept for those alone)
+    freqs = np.fft.rfftfreq(window, 1.0 / RATE)
     low = freqs < 1000
     freqs = freqs[low]
+    z = stft_frames(mono, signal.get_window("hann", window), window // 2, bins=int(low.sum()))
+    low = np.ones(len(freqs), bool)
     level = 20.0 * np.log10(np.percentile(np.abs(z[low]), 10, axis=1) + 1e-12)
 
     def needle(f):
@@ -195,18 +200,41 @@ def remove_hum(audio):
                 best, best_height = [k * f0 for k in found], height
     if not best:
         return audio, []
-    out = audio.astype(np.float64)
-    for f in best:
-        b, a = signal.iirnotch(f, f / 0.5, fs=RATE)
-        out = signal.filtfilt(b, a, out, axis=1)
-    return out.astype(np.float32), [round(f, 2) for f in best]
+    # (a channel at a time: the filtering works in double precision, and two of an hour's channels at once
+    # would take more memory than needed)
+    out = np.empty(audio.shape, np.float32)
+    for c in range(audio.shape[0]):
+        channel = audio[c].astype(np.float64)
+        for f in best:
+            b, a = signal.iirnotch(f, f / 0.5, fs=RATE)
+            channel = signal.filtfilt(b, a, channel)
+        out[c] = channel
+    return out, [round(f, 2) for f in best]
 
 
 # --- strokes ----------------------------------------------------------------------------------------
 
+def stft_frames(mono, window, hop, bins=None, magnitude=False):
+    """What signal.stft(mono, nperseg=len(window), noverlap=len(window) - hop, boundary=None, padded=False)
+    gives - [bins, frames], scaled by the window's sum - computed a few thousand frames at a time and in single
+    precision, with only the first "bins" rows (all when None) and only their magnitude when asked: the whole
+    transform of an hour's recording at once would take gigabytes."""
+    mono = np.ascontiguousarray(mono, dtype=np.float32)
+    size = len(window)
+    count = 0 if len(mono) < size else 1 + (len(mono) - size) // hop
+    rows = size // 2 + 1 if bins is None else bins
+    out = np.empty((rows, count), np.float32 if magnitude else np.complex64)
+    window = (window / window.sum()).astype(np.float32)
+    frames = np.lib.stride_tricks.sliding_window_view(mono, size)[::hop]
+    block = max(1, (1 << 25) // size)            # about 128 MB of samples at a time
+    for start in range(0, count, block):
+        z = np.fft.rfft(frames[start:start + block] * window, axis=1)[:, :rows]
+        out[:, start:start + len(z)] = (np.abs(z) if magnitude else z).T
+    return out
+
+
 def spectrogram(mono):
-    _, _, z = signal.stft(mono, fs=RATE, nperseg=FFT, noverlap=FFT - HOP, boundary=None, padded=False)
-    return np.abs(z).astype(np.float32)
+    return stft_frames(mono, signal.get_window("hann", FFT), HOP, magnitude=True)
 
 
 def band(spec, low, high):
@@ -323,7 +351,7 @@ def find_strokes(drums):
         window = slice(max(0, f - 2), f + 6)
         r = {name: float(rises[name][window].max()) for name in rises}
         lvl = {name: float(db[name][f:f + 7].max() - loud[name]) for name in db}
-        t = f * frame_time
+        t = f * frame_time + FRAME_CENTRE
         kick = r["low"] > 6 and lvl["low"] > -5
         # the pitch of a drum's body; above the bass drum when that sounds too (and above a steady hum)
         spectrum, humming = drum_body(drum_band, f, hum)
@@ -590,8 +618,7 @@ def model_activations(path, drums):
     import kitnote_drum_model
     model, features = kitnote_drum_model.load(path)
     thresholds = torch.load(path, map_location="cpu", weights_only=True).get("thresholds") or DRUM_THRESHOLDS
-    with torch.no_grad():
-        return model(torch.from_numpy(features(drums)).unsqueeze(0)).sigmoid().numpy()[0], thresholds
+    return kitnote_drum_model.activations(model, features(drums)), thresholds
 
 
 def pick_peaks(curve, threshold, fps=MODEL_FPS):
@@ -935,7 +962,7 @@ def compound_beats(beats, downbeats, strokes, per_measure):
     groove, or by the downbeats), and the time of a downbeat (or None)."""
     first_downbeat = float(downbeats[0]) if len(downbeats) else None
     groups = grouped_in_threes(beats, strokes)
-    if groups:
+    if groups and len(groups) >= 2:
         dotted = beats[groups]
         return dotted, downbeat_phase(dotted, downbeats, per_measure)
     if first_downbeat is not None and len(downbeats) > 1:
@@ -952,7 +979,9 @@ def compound_beats(beats, downbeats, strokes, per_measure):
     if 60.0 / float(np.median(np.diff(beats))) > 110:
         # beats far too fast for dotted quarters, and no groups found in them: every third one, from the downbeat
         start = int(np.argmin(np.abs(beats - first_downbeat))) % 3 if first_downbeat is not None else 0
-        return beats[start::3], first_downbeat
+        # (a clip of a few eighths gives one or two dotted quarters: too few to make measures of, kept as they are)
+        if len(beats[start::3]) >= 2:
+            return beats[start::3], first_downbeat
     return beats, downbeat_phase(beats, downbeats, per_measure)
 
 
@@ -1002,7 +1031,7 @@ def track_beats(onset_curve, frame_time, bpm):
     # before the first tracked beat: continue at the tempo, down to the very start
     while beats[0] - period > -0.2 * period:
         beats = np.insert(beats, 0, beats[0] - period)
-    return beats * frame_time
+    return beats * frame_time + FRAME_CENTRE
 
 
 # --- the tab ----------------------------------------------------------------------------------------
@@ -1621,6 +1650,11 @@ def main():
         if len(beats) < 4:
             engine = None       # too short or too quiet for the model: engine 1
             drum_model = None
+            # (what the drum model measured is not engine 1's: its confidences, cymbal rings and activations
+            # would change what engine 1 writes)
+            CONFIDENCE.clear()
+            CYMBAL_RINGS.clear()
+            MODEL_ACTIVATIONS.clear()
     if engine:
         tab, measures, sections, bpm, measure_times = neural_tab(strokes, beats, downbeats, duration, args, drums)
         compound = METERS[args.meter][1]

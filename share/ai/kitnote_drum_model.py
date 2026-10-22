@@ -40,11 +40,16 @@ N_BANDS = BANK.shape[0]
 
 
 def spectrogram(signal):
-    """The log-frequency spectrogram of a mono signal (float32 at RATE): [frames, N_BANDS], log(1 + x)."""
+    """The log-frequency spectrogram of a mono signal (float32 at RATE): [frames, N_BANDS], log(1 + x). (A few
+    thousand frames at a time: the frames of an hour's recording at once would take gigabytes.)"""
     padded = np.pad(signal.astype(np.float32), N_FFT // 2)
     frames = np.lib.stride_tricks.sliding_window_view(padded, N_FFT)[::HOP]
-    magnitude = np.abs(np.fft.rfft(frames * np.hanning(N_FFT).astype(np.float32), axis=1))
-    return np.log1p(magnitude @ BANK.T).astype(np.float32)
+    window = np.hanning(N_FFT).astype(np.float32)
+    out = np.empty((len(frames), N_BANDS), np.float32)
+    for start in range(0, len(frames), 4096):
+        magnitude = np.abs(np.fft.rfft(frames[start:start + 4096] * window, axis=1))
+        out[start:start + len(magnitude)] = np.log1p(magnitude @ BANK.T)
+    return out
 
 
 def features(audio):
@@ -75,6 +80,26 @@ class DrumNet(nn.Module):
         h = h.permute(0, 2, 1, 3).reshape(b, t, c * f)
         h, _ = self.gru(h)
         return self.out(h)
+
+
+CHUNK = 360 * FPS               # frames the model hears at once (six minutes: a song is heard whole) ...
+CONTEXT = 30 * FPS              # ... and, on each side of them, frames it hears only for what comes before and after
+
+
+def activations(model, feats):
+    """The model's activations [frames, classes] (0 to 1) of features [frames, N_BANDS]. A recording longer than
+    CHUNK is heard in pieces of CHUNK frames, each with CONTEXT frames around it, and only the middle of each
+    piece is kept: the whole of an hour's recording at once would take gigabytes. A recording up to CHUNK
+    frames long is heard whole, as before."""
+    frames = len(feats)
+    out = np.empty((frames, len(CLASSES)), np.float32)
+    with torch.no_grad():
+        for start in range(0, frames, CHUNK):
+            end = min(frames, start + CHUNK)
+            lo, hi = max(0, start - CONTEXT), min(frames, end + CONTEXT)
+            piece = torch.from_numpy(np.ascontiguousarray(feats[lo:hi])).unsqueeze(0)
+            out[start:end] = model(piece).sigmoid().numpy()[0][start - lo:end - lo]
+    return out
 
 
 def load(path, device="cpu"):

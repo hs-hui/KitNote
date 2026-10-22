@@ -1,5 +1,12 @@
 # Packs the installed build (build.install) into dist\KitNote-<version>-win64.zip.
-# Run tools\kitnote\build_windows.bat first.
+# Run tools\kitnote\build_windows.bat first. With Inno Setup 6 installed it writes the installer
+# KitNote-<version>-win64-setup.exe too; -RequireInstaller (CI) fails when Inno Setup is missing.
+param(
+    [switch]$RequireInstaller
+)
+# a step that fails (a file of the package that cannot be copied) stops the packing
+$ErrorActionPreference = 'Stop'
+
 $root = Resolve-Path (Join-Path $PSScriptRoot '..\..')
 $install = Join-Path $root 'build.install'
 if (-not (Test-Path (Join-Path $install 'bin\KitNote.exe'))) {
@@ -19,6 +26,9 @@ if (Test-Path $stage) {
 }
 New-Item $stage -ItemType Directory -Force | Out-Null
 Copy-Item (Join-Path $install '*') $stage -Recurse
+# (files set aside while they were in use - "name.parked-<time>", when a running kitnote-mcp held them during a
+# build - are no part of the package)
+Get-ChildItem $stage -Recurse -File -Filter '*.parked-*' | Remove-Item -Force
 Copy-Item (Join-Path $PSScriptRoot 'install.ps1') $stage
 Copy-Item (Join-Path $PSScriptRoot 'register_filetype.ps1') $stage
 Copy-Item (Join-Path $root 'LICENSE.txt') $stage

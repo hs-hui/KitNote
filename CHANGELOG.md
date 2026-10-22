@@ -4,6 +4,32 @@ All notable changes to KitNote. The release workflow copies the section for the 
 (the `## <version>` heading) into the GitHub Release notes, so every release needs one. See
 [docs/RELEASING.md](docs/RELEASING.md).
 
+## Unreleased
+
+### Fixed
+- Preferences > AI set up Claude Desktop in a file the Microsoft Store version of Claude Desktop never reads;
+  it now writes where that version keeps its settings.
+- Pasting a drum tab whose rows would land in the wrong measures (an empty line inside a row, a line with
+  fewer measures than the rest of its row) wrote them silently; it is now refused with the reason, as on the
+  command line.
+- Cowbell, tambourine and hand clap are copied as their own tab lines (CB, TB, CP) and pasted back; other
+  percussion goes on PC and is pasted back too (before, PC lines were dropped).
+- A pattern saved from a pickup measure is applied to pickups of that length (it was never applied).
+- Ghost notes of saved patterns show pale in the pattern library; the step grid no longer sounds a drum on a
+  measure it cannot write.
+- The recording-to-score dialog reports what KitNote could not write instead of only "Written".
+- A recording-to-score transcription is about 25 ms more exact on the band analysis (engine 1): stroke and
+  measure times were early by half an analysis window. Long recordings (over six minutes) no longer run out
+  of memory.
+- MCP server: measure numbers above 2000 are refused at once (they kept KitNote busy for ten minutes),
+  transcribe_audio writes only scores, a measure timing that does not go forward no longer refuses the whole
+  transcription, and an engine installation that times out stops all of its programs.
+- Audio engine: installs on Intel Macs (a package needed a newer PyTorch than Intel Macs have), and an
+  installation that was stopped half-way can be run again.
+- Windows: installing from the zip over an installation made with the setup program is refused; the setup
+  program replaces an installation made from the zip; uninstalling leaves other programs' "Open with" entries.
+- Codex: a "kitnote" server of the user's own, written in any TOML form, is no longer defined a second time.
+
 ## 1.0.0
 
 The first release of KitNote, a drum notation editor built on MuseScore Studio 4.7.5. The engraving, playback

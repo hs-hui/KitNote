@@ -222,7 +222,7 @@ BD|o-------o-------|
 
 The other way round: copy a text drum tab from the web or from your notes, then choose `Tools → Paste drum tab (text)`. It is written into the score from the selected measure on (from the first measure when nothing is selected); measures are added when the score is shorter than the tab.
 
-- The drum of a line is read from the letters it begins with: `HH`/`H` (hi-hat), `SD`/`S`/`SN` (snare), `BD`/`B`/`K` (bass drum), `CC`/`C`/`CR` (crash), `RD`/`R` (ride), `T1`/`HT`, `T2`/`MT`, `FT`/`LT`/`F` (toms), `HF` (pedal hi-hat).
+- The drum of a line is read from the letters it begins with: `HH`/`H` (hi-hat), `SD`/`S`/`SN` (snare), `BD`/`B`/`K` (bass drum), `CC`/`C`/`CR` (crash), `RD`/`R` (ride), `T1`/`HT`, `T2`/`MT`, `FT`/`LT`/`F` (toms), `HF` (pedal hi-hat), `CB` (cowbell), `TB` (tambourine), `CP` (hand clap), `PC` (other percussion).
 - A capital is an accent and `g` a ghost note. On the hi-hat line an `o` is the open hi-hat, on the snare line an `x` the cross-stick.
 - Other lines, such as counting or lyrics, are passed over.
 - Lines with twelve columns to the measure (in 4/4) are read as triplets.

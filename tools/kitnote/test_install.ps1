@@ -98,5 +98,22 @@ Check 'shortcuts removed' (-not (Test-Path "$menu\KitNote.lnk") -and -not (Test-
 Check 'registry entries removed' (-not (Test-Path "$reg\Classes\.kitnote") -and -not (Test-Path "$reg\Classes\KitNote.Score") -and -not (Test-Path "$reg\Uninstall\KitNote"))
 Check 'the unpacked folder was not touched by the uninstall' (Test-Path "$stage\bin\KitNote.exe")
 
+# another program in the "Open with" list of .kitnote stays when KitNote is removed
+# (another folder: the first one holds a file of the user, so it is no empty folder to install into)
+$again = "$target-again"
+$code = Invoke-Quiet (Join-Path $stage 'install.ps1') (@('-InstallDir', $again) + $redirect)
+New-Item "$reg\Classes\.kitnote\OpenWithProgids" -Force | Out-Null
+New-ItemProperty "$reg\Classes\.kitnote\OpenWithProgids" -Name 'Other.Editor' -Value '' -PropertyType String -Force | Out-Null
+$code = Invoke-Quiet "$again\install.ps1" (@('-Uninstall') + $redirect)
+Check 'uninstall keeps another program''s "Open with" entry' ($code -eq 0 -and (Test-Path "$reg\Classes\.kitnote\OpenWithProgids") -and -not (Test-Path "$reg\Classes\KitNote.Score"))
+Check 'uninstall takes back its own default program for .kitnote' (-not (Get-ItemProperty "$reg\Classes\.kitnote").'(default)')
+Remove-Item "$reg\Classes\.kitnote" -Recurse -Force
+
+# an installation made with the setup program is not installed over from the zip
+New-Item "$reg\Uninstall\{6C1E3B9A-6F4D-4E0B-9A57-3B2D8E1F4C21}_is1" -Force | Out-Null
+$code = Invoke-Quiet (Join-Path $stage 'install.ps1') (@('-InstallDir', $again) + $redirect)
+Check 'install.ps1 refuses when the setup program installed KitNote' ($code -ne 0 -and -not (Test-Path "$again\bin\KitNote.exe"))
+Remove-Item "$reg\Uninstall\{6C1E3B9A-6F4D-4E0B-9A57-3B2D8E1F4C21}_is1" -Force
+
 Remove-Item $reg -Recurse -Force
 Remove-Item $S -Recurse -Force
