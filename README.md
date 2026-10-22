@@ -1,6 +1,6 @@
 <p align="center"><img src="docs/kitnote/banner.png" alt="KitNote — drum notation editor" width="100%"></p>
 
-<p align="center"><b>English</b> · <a href="README.ko.md">한국어</a></p>
+<p align="center"><b>English</b> · <a href="README.ko.md">한국어</a> · <a href="https://kitnote.hui.kr">Website</a></p>
 
 # KitNote
 

@@ -1,6 +1,6 @@
 <p align="center"><img src="docs/kitnote/banner.png" alt="KitNote — 드럼 악보 전용 편집기" width="100%"></p>
 
-<p align="center"><a href="README.md">English</a> · <b>한국어</b></p>
+<p align="center"><a href="README.md">English</a> · <b>한국어</b> · <a href="https://kitnote.hui.kr">웹사이트</a></p>
 
 # KitNote
 
