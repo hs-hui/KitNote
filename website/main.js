@@ -54,10 +54,13 @@
   // percussion of MS Basic, MIT licence: assets/drums/LICENSE-MS-Basic.md): plain, accented (_a) and ghost (_g).
   // assets/drums/kit.json says where each stroke starts and how long it rings, in seconds.
   let ac = null, out = null, kit = null, kitLoading = null, openHat = null;
-  const kitFiles = Promise.all([
-    fetch('assets/drums/kit.mp3').then((r) => r.arrayBuffer()),
-    fetch('assets/drums/kit.json').then((r) => r.json()),
-  ]);
+  const fetchOk = (url) => fetch(url).then((r) => (r.ok ? r : Promise.reject(new Error(`${url}: ${r.status}`))));
+  let kitFiles = null;
+  const getKitFiles = () => (kitFiles = kitFiles || Promise.all([
+    fetchOk('assets/drums/kit.mp3').then((r) => r.arrayBuffer()),
+    fetchOk('assets/drums/kit.json').then((r) => r.json()),
+  ]));
+  getKitFiles().catch(() => { kitFiles = null; });
   function audio() {
     if (!ac) {
       ac = new (window.AudioContext || window.webkitAudioContext)();
@@ -73,7 +76,7 @@
   }
   function loadKit() {
     if (!kitLoading) {
-      kitLoading = kitFiles.then(([data, map]) => audio().decodeAudioData(data.slice(0)).then((buffer) => {
+      kitLoading = getKitFiles().then(([data, map]) => audio().decodeAudioData(data.slice(0)).then((buffer) => {
         // the decoder may shift the file by a few milliseconds: start every stroke where its sound starts
         const ch = buffer.getChannelData(0), sr = buffer.sampleRate, slots = {};
         for (const [name, [start, dur]] of Object.entries(map)) {
@@ -86,7 +89,12 @@
           slots[name] = { at: on / sr, dur: (b - on) / sr };
         }
         kit = { buffer, slots };
-      }));
+      })).catch((error) => {
+        // (the next press tries again)
+        kitLoading = null;
+        kitFiles = null;
+        throw error;
+      });
     }
     return kitLoading;
   }
@@ -123,13 +131,24 @@
 
   // A look-ahead loop over the steps of a pattern; draw(step) is called when a step is heard.
   function makeLoop({ steps, stepDur, play, draw, end, loops = Infinity }) {
-    let next = 0, n = 0, timer = 0, raf = 0, running = false;
+    let next = 0, n = 0, timer = 0, raf = 0, running = false, waiting = false;
     const queue = [];
     const self = {
       start() {
         stopAll();
         audio();
-        if (!kit) { loadKit().then(() => self.start()); return; }
+        if (!kit) {
+          // the sounds are still loading: this loop is what plays next, unless it is stopped meanwhile
+          current = self;
+          waiting = true;
+          loadKit().then(() => {
+            if (waiting && current === self) { waiting = false; self.start(); }
+          }).catch(() => {
+            if (waiting) { waiting = false; if (current === self) current = null; end(false); }
+          });
+          return;
+        }
+        waiting = false;
         current = self;
         running = true;
         n = 0;
@@ -156,6 +175,12 @@
         raf = requestAnimationFrame(frame);
       },
       stop(finished) {
+        if (waiting) {
+          waiting = false;
+          if (current === self) current = null;
+          end(false);
+          return;
+        }
         if (!running) return;
         running = false;
         clearInterval(timer);
@@ -163,7 +188,7 @@
         if (current === self) current = null;
         end(finished === true);
       },
-      get running() { return running; },
+      get running() { return running || waiting; },
     };
     return self;
   }
@@ -292,18 +317,21 @@
           preset = -1;
           drawGrid();
           drawPresets();
-          if (row[s]) { audio(); loadKit().then(() => hit(r.id, row[s], ac.currentTime)); }
+          if (row[s]) { audio(); loadKit().then(() => hit(r.id, row[s], ac.currentTime)).catch(() => {}); }
         });
         b.addEventListener('contextmenu', (e) => {
           e.preventDefault();
           const row = song[meas][r.id];
           // accent -> ghost note -> normal, as in KitNote
           row[s] = row[s] === 0 || row[s] === 1 ? 2 : row[s] === 2 ? 3 : 1;
+          // (closed and open hi-hat are one drum: one of them on a step)
+          if (r.id === 'HH') song[meas].HO[s] = 0;
+          if (r.id === 'HO') song[meas].HH[s] = 0;
           preset = -1;
           drawGrid();
           drawPresets();
           audio();
-          loadKit().then(() => hit(r.id, row[s], ac.currentTime));
+          loadKit().then(() => hit(r.id, row[s], ac.currentTime)).catch(() => {});
         });
         gridEl.append(b);
         cells[r.id].push(b);
@@ -433,23 +461,25 @@
     }
     setTimeout(() => { label.innerHTML = lang === 'ko' ? label.dataset.ko : label.dataset.en; }, 1600);
   });
-  // stop when the grid leaves the screen
-  new IntersectionObserver((es) => { if (!es[0].isIntersecting && gridLoop.running) gridLoop.stop(); }).observe($('#machine'));
-
-  // the grid's playhead walks in time, silently, until someone presses play
-  if (!reduced) {
-    let idle = 0, last = 0;
-    const walk = (now) => {
-      if (!gridLoop.running && now - last >= 60000 / bpm / 4) {
-        last = now;
-        col = idle;
-        idle = (idle + 1) % 16;
-        for (const r of ROWS) cells[r.id].forEach((b, s) => b.classList.toggle('now', s === col));
-      }
-      requestAnimationFrame(walk);
-    };
+  // the grid's playhead walks in time, silently, until someone presses play - while the grid is on the screen
+  let idle = 0, last = 0, walking = false;
+  const walk = (now) => {
+    if (!walking) return;
+    if (!gridLoop.running && now - last >= 60000 / bpm / 4) {
+      last = now;
+      col = idle;
+      idle = (idle + 1) % 16;
+      for (const r of ROWS) cells[r.id].forEach((b, s) => b.classList.toggle('now', s === col));
+    }
     requestAnimationFrame(walk);
-  }
+  };
+  new IntersectionObserver((es) => {
+    const visible = es[0].isIntersecting;
+    // stop when the grid leaves the screen
+    if (!visible && gridLoop.running) gridLoop.stop();
+    if (visible && !walking && !reduced) { walking = true; requestAnimationFrame(walk); }
+    if (!visible) walking = false;
+  }).observe($('#machine'));
 
   // ------------------------------------------------------------------ the pattern library
   let cat = 'groove';
@@ -547,7 +577,11 @@
         card.classList.add('on');
       };
       card.addEventListener('click', toggle);
-      card.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
+      card.addEventListener('keydown', (e) => {
+        // (keys on the "Open in step grid" button are the button's)
+        if (e.target !== card) return;
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+      });
       cardsEl.append(card);
     }
   }
@@ -606,20 +640,27 @@
     }
   }
   const wave = $('#wave'), wctx = wave.getContext('2d');
-  let buffer = null, peaks = null, recSrc = null, recStart = 0, recRaf = 0;
+  let buffer = null, peaks = null, recSrc = null, recStart = 0, recRaf = 0, recLoading = null;
   const STEP = 0.125;  // a sixteenth at 120 BPM
-  async function loadRec() {
-    if (buffer) return buffer;
-    const data = await fetch('assets/demo-groove.mp3').then((r) => r.arrayBuffer());
-    buffer = await audio().decodeAudioData(data);
-    const ch = buffer.getChannelData(0), cols = 280, per = Math.floor(ch.length / cols);
-    peaks = [];
-    for (let c = 0; c < cols; c++) {
-      let m = 0;
-      for (let i = c * per; i < (c + 1) * per; i += 8) m = Math.max(m, Math.abs(ch[i]));
-      peaks.push(m);
+  // fetched and decoded once (an AudioBuffer plays in any audio context), for the picture and for playing
+  function loadRec() {
+    if (!recLoading) {
+      recLoading = fetchOk('assets/demo-groove.mp3').then((r) => r.arrayBuffer())
+        .then((data) => new (window.OfflineAudioContext || window.webkitOfflineAudioContext)(1, 1, 44100).decodeAudioData(data))
+        .then((decoded) => {
+          buffer = decoded;
+          const ch = buffer.getChannelData(0), cols = 280, per = Math.floor(ch.length / cols);
+          peaks = [];
+          for (let c = 0; c < cols; c++) {
+            let m = 0;
+            for (let i = c * per; i < (c + 1) * per; i += 8) m = Math.max(m, Math.abs(ch[i]));
+            peaks.push(m);
+          }
+          return buffer;
+        })
+        .catch((error) => { recLoading = null; throw error; });
     }
-    return buffer;
+    return recLoading;
   }
   function drawWave(pos) {
     const w = wave.width, h = wave.height;
@@ -658,12 +699,37 @@
       }
     },
   };
+  let recWaiting = false;
+  // while the recording loads, this is what plays next: pressed again, or something else started, it is not
+  const recWait = {
+    stop() {
+      recWaiting = false;
+      if (current === recWait) current = null;
+      recBtn.classList.remove('on');
+      recStatus.innerHTML = lang === 'ko' ? recStatus.dataset.ko : recStatus.dataset.en;
+    },
+  };
   recBtn.addEventListener('click', async () => {
     if (recCtl.running) { recCtl.stop(); return; }
+    if (recWaiting) { recWait.stop(); return; }
     stopAll();
+    audio();
     recBtn.classList.add('on');
     recStatus.textContent = T('Listening…', '듣는 중…');
-    await loadRec();
+    recWaiting = true;
+    current = recWait;
+    try {
+      await loadRec();
+    } catch (e) {
+      if (!recWaiting) return;
+      recWaiting = false;
+      if (current === recWait) current = null;
+      recBtn.classList.remove('on');
+      recStatus.textContent = T('The recording could not be loaded.', '녹음을 불러오지 못했습니다.');
+      return;
+    }
+    if (!recWaiting) return;
+    recWaiting = false;
     current = recCtl;
     recCtl.running = true;
     setFound(-1);
@@ -683,22 +749,7 @@
     recRaf = requestAnimationFrame(frame);
   });
   new IntersectionObserver((es) => {
-    if (es[0].isIntersecting && !peaks) {
-      fetch('assets/demo-groove.mp3').then((r) => r.arrayBuffer())
-        .then((d) => new (window.OfflineAudioContext || window.webkitOfflineAudioContext)(1, 44100, 44100).decodeAudioData(d))
-        .then((b) => {
-          if (buffer) return;
-          const ch = b.getChannelData(0), cols = 280, per = Math.floor(ch.length / cols);
-          peaks = [];
-          for (let c = 0; c < cols; c++) {
-            let m = 0;
-            for (let i = c * per; i < (c + 1) * per; i += 8) m = Math.max(m, Math.abs(ch[i]));
-            peaks.push(m);
-          }
-          drawWave(0);
-        })
-        .catch(() => drawWave(0));
-    }
+    if (es[0].isIntersecting && !peaks) loadRec().then(() => { if (!recCtl.running) drawWave(0); }).catch(() => drawWave(0));
   }, { rootMargin: '200px' }).observe(wave);
   drawWave(0);
 
@@ -809,5 +860,9 @@
   applyLang();
   loadPreset(0);
   const start = location.hash.slice(1);
-  if (PANELS.includes(start)) selectTab(start);
+  if (PANELS.includes(start)) {
+    selectTab(start);
+    // (the panel was hidden when the browser looked for it: the page is taken there now)
+    requestAnimationFrame(() => $('#library').scrollIntoView({ block: 'start' }));
+  }
 })();
